@@ -127,4 +127,3 @@ We care about security and reliability, so we included:
 *   **Input Validation:** Form inputs are thoroughly checked before reaching the database.
 *   **Error Logging:** Critical server issues are captured in `server/logs/error.log` for easy troubleshooting.
 ---
-Made with ❤️ for the University of Vavuniya.
