@@ -62,7 +62,7 @@ cd server
 npm test
 ```
 
-## 🛡 Security & Reliability
+## Security & Reliability
 
 -   **Helmet**: Security-focused HTTP headers.
 -   **Rate Limiting**: Protection against brute-force attacks.
@@ -73,7 +73,7 @@ npm test
 © 2026 University of Vavuniya. All Rights Reserved.
 # Student Project & Research Archive Management System (SPRAMS)
 Welcome to **SPRAMS**! This platform was built for the **University of Vavuniya** to solve a very common problem: keeping student projects and faculty research papers organized, accessible, and searchable, all in one place instead of scattered across drive folders or email attachments.
-## 🤔 What does this system do?
+##  What does this system do?
 *   **A central home for projects & papers:** Students and lecturers can easily upload their reports, presentations, and publications. No more lost files.
 *   **Smart AI summaries & keywords:** We integrated Anthropic's Claude. When you submit a project, the AI automatically reads the abstract, suggests improvements, and tags it with relevant keywords so others can find it easily.
 *   **Different views for different roles:**
