@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { projectsAPI, dashboardAPI } from '../../services/api';
+import { projectsAPI, tokenStorage, getProjectProposalUrl } from '../../services/api';
 import {
     PageSpinner, EmptyState, Pagination, ConfirmDialog, Modal, Spinner, ErrorAlert,
 } from '../../components/ui/Common';
 import toast from 'react-hot-toast';
 import {
     PlusIcon, PencilIcon, TrashIcon, FolderOpenIcon, UserGroupIcon,
-    ArrowDownTrayIcon, FunnelIcon, SparklesIcon, CheckIcon, XMarkIcon,
+    ArrowDownTrayIcon, FunnelIcon, CheckIcon, XMarkIcon, LinkIcon,
 } from '@heroicons/react/24/outline';
 import { useForm, useFieldArray } from 'react-hook-form';
 
@@ -17,7 +17,7 @@ const DEPARTMENTS = ['IT', 'AMC', 'BIO'];
 
 function ProjectForm({ onClose, onSuccess, initialData }) {
     const [loading, setLoading] = useState(false);
-    const [improving, setImproving] = useState(false);
+    const [proposalFile, setProposalFile] = useState(null);
     const { register, handleSubmit, setValue, getValues, watch, formState: { errors }, control } = useForm({
         defaultValues: initialData || {
             title: '', department: '', academicYear: '', groupName: '',
@@ -26,34 +26,33 @@ function ProjectForm({ onClose, onSuccess, initialData }) {
     });
     const { fields, append, remove } = useFieldArray({ control, name: 'members' });
 
-    const handleImproveAbstract = async () => {
-        const abstract = getValues('abstract');
-        if (!abstract || abstract.trim().length < 50) {
-            toast.error('Abstract must be at least 50 characters to improve');
+    const onSubmit = async (data) => {
+        if (!initialData?._id && !proposalFile) {
+            toast.error('Project proposal PDF is required for submission');
             return;
         }
-        setImproving(true);
-        try {
-            const { data } = await dashboardAPI.improveAbstract(abstract);
-            if (data.data.improved) {
-                setValue('abstract', data.data.improved);
-                toast.success('Abstract improved by AI! Review and modify as needed.');
-            }
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'AI improvement failed');
-        } finally {
-            setImproving(false);
-        }
-    };
-
-    const onSubmit = async (data) => {
         setLoading(true);
         try {
+            const formData = new FormData();
+            formData.append('title', data.title);
+            formData.append('department', data.department);
+            formData.append('academicYear', data.academicYear);
+            formData.append('groupName', data.groupName);
+            formData.append('supervisor', data.supervisor);
+            formData.append('abstract', data.abstract);
+
+            const cleanedMembers = data.members.filter(m => m.name.trim() && m.regNo.trim());
+            formData.append('members', JSON.stringify(cleanedMembers));
+
+            if (proposalFile) {
+                formData.append('proposal', proposalFile);
+            }
+
             if (initialData?._id) {
-                await projectsAPI.update(initialData._id, data);
+                await projectsAPI.update(initialData._id, formData);
                 toast.success('Project updated successfully');
             } else {
-                await projectsAPI.create(data);
+                await projectsAPI.create(formData);
                 toast.success('Project created successfully');
             }
             onSuccess();
@@ -110,17 +109,9 @@ function ProjectForm({ onClose, onSuccess, initialData }) {
                 </div>
             </div>
 
-            {/* Abstract with AI improve */}
+            {/* Abstract */}
             <div>
-                <div className="flex items-center justify-between mb-1">
-                    <label className="label mb-0">Abstract *</label>
-                    <button type="button" onClick={handleImproveAbstract} disabled={improving}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors disabled:opacity-50"
-                        aria-label="Improve abstract with AI">
-                        {improving ? <Spinner size="sm" /> : <SparklesIcon className="w-3.5 h-3.5" />}
-                        {improving ? 'Improving...' : 'Improve with AI'}
-                    </button>
-                </div>
+                <label className="label">Abstract *</label>
                 <textarea rows={5} className={`input-field resize-none ${errors.abstract ? 'border-red-400' : ''}`}
                     placeholder="Write your project abstract here (minimum 50 characters)..."
                     {...register('abstract', {
@@ -128,6 +119,73 @@ function ProjectForm({ onClose, onSuccess, initialData }) {
                         minLength: { value: 50, message: 'Minimum 50 characters' }
                     })} />
                 {errors.abstract && <p className="text-xs text-red-500 mt-1">{errors.abstract.message}</p>}
+            </div>
+
+            {/* Proposal PDF Upload */}
+            <div>
+                <label className="label font-medium text-slate-700">Proposal PDF {!initialData?._id && <span className="text-red-500">*</span>}</label>
+                {initialData?.proposalFile && (
+                    <div className="mb-2 text-xs text-slate-500">
+                        Current: <span className="font-semibold text-primary-600">{initialData.proposalFile.originalName}</span>. Uploading a new PDF will replace it.
+                    </div>
+                )}
+                {proposalFile ? (
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl bg-slate-50/50 relative">
+                        <div className="space-y-1 text-center">
+                            <div className="flex flex-col items-center">
+                                <svg className="mx-auto h-12 w-12 text-primary-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <div className="flex text-sm text-slate-600 mt-2 font-medium">
+                                    <span>{proposalFile.name}</span>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setProposalFile(null);
+                                        }}
+                                        className="ml-2 text-red-500 hover:text-red-700 font-semibold"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                                <p className="text-xs text-slate-400 mt-1">{(proposalFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <label htmlFor="proposal-upload" className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl hover:border-primary-400 transition-colors bg-slate-50/50 cursor-pointer relative">
+                        <div className="space-y-1 text-center">
+                            <div className="flex flex-col items-center">
+                                <svg className="mx-auto h-12 w-12 text-slate-400 group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                <div className="flex text-sm text-slate-600 mt-2 justify-center">
+                                    <span className="font-semibold text-primary-600 hover:text-primary-500">
+                                        Upload a proposal PDF
+                                    </span>
+                                    <input
+                                        id="proposal-upload"
+                                        name="proposal-upload"
+                                        type="file"
+                                        accept=".pdf"
+                                        className="sr-only"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file && file.type === 'application/pdf') {
+                                                setProposalFile(file);
+                                            } else if (file) {
+                                                toast.error('Only PDF files are allowed');
+                                            }
+                                        }}
+                                    />
+                                </div>
+                                <p className="text-xs text-slate-400 mt-1">PDF up to 50MB</p>
+                            </div>
+                        </div>
+                    </label>
+                )}
             </div>
 
             {/* Members */}
@@ -186,10 +244,11 @@ export default function ProjectsPage() {
         setError('');
         try {
             const { data } = await projectsAPI.getAll({ page, limit: 20, ...filters });
-            setProjects(data.data.projects);
-            setPagination(data.data.pagination);
-        } catch {
-            setError('Failed to load projects.');
+            setProjects(data.data?.projects || []);
+            setPagination(data.data?.pagination || { page: 1, totalPages: 1, total: 0 });
+        } catch (err) {
+            console.error('Failed to load projects:', err);
+            setError(err.response?.data?.message || 'Failed to load projects. Is the backend running on port 5000?');
         } finally {
             setLoading(false);
         }
@@ -356,6 +415,37 @@ export default function ProjectsPage() {
 }
 
 function ProjectCard({ project, isAdmin, isLecturer, onEdit, onDelete }) {
+    const [downloading, setDownloading] = useState(false);
+
+    const handleDownload = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDownloading(true);
+        try {
+            const token = tokenStorage.getAccess();
+            const url = getProjectProposalUrl(project._id);
+            const response = await fetch(`${url}?token=${token}`);
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                toast.error(err.message || 'Proposal PDF not available');
+                return;
+            }
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.setAttribute('download', `${project.title}_Proposal.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+            toast.error('Download failed. Please try again.');
+        } finally {
+            setDownloading(false);
+        }
+    };
+
     return (
         <div className="card hover:shadow-md transition-shadow duration-200">
             <div className="flex items-start justify-between mb-3">
@@ -387,6 +477,17 @@ function ProjectCard({ project, isAdmin, isLecturer, onEdit, onDelete }) {
                 <Link to={`/projects/${project._id}`} className="btn-secondary text-xs flex-1 justify-center py-1.5">
                     View Details
                 </Link>
+                {project.proposalFile && (
+                    <button
+                        onClick={handleDownload}
+                        disabled={downloading}
+                        className="btn-secondary text-xs flex-1 justify-center py-1.5 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
+                        title="Download Proposal"
+                    >
+                        {downloading ? <Spinner size="sm" className="mr-1.5" /> : <ArrowDownTrayIcon className="w-4 h-4 mr-1.5" />}
+                        Download
+                    </button>
+                )}
                 {(isAdmin || isLecturer) && (
                     <>
                         <button onClick={onEdit} className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" aria-label="Edit project">
