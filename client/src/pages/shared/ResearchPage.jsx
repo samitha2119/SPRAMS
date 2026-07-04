@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { researchAPI, getFileUrl } from '../../services/api';
 import {
-    PageSpinner, EmptyState, Pagination, ConfirmDialog, Modal, Spinner, AIBadge, FileTypeBadge,
+    PageSpinner, EmptyState, Pagination, ConfirmDialog, Modal, Spinner, FileTypeBadge,
 } from '../../components/ui/Common';
 import toast from 'react-hot-toast';
 import {
     PlusIcon, PencilIcon, TrashIcon, DocumentTextIcon, PaperClipIcon,
-    SparklesIcon, TagIcon,
+    TagIcon, ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 import { useForm } from 'react-hook-form';
 import { useDropzone } from 'react-dropzone';
@@ -68,7 +68,7 @@ function ResearchForm({ onClose, onSuccess, initialData }) {
                 toast.success('Research entry updated');
             } else {
                 await researchAPI.create(formData);
-                toast.success('Research entry created! Analysis summary is being generated...');
+                toast.success('Research entry created successfully');
             }
             onSuccess();
             onClose();
@@ -170,24 +170,11 @@ function ResearchCard({ entry, isAdmin, isLecturer, onEdit, onDelete }) {
         <div className="card hover:shadow-md transition-shadow duration-200">
             <div className="flex items-start justify-between mb-2">
                 <span className="badge badge-purple">{entry.year}</span>
-                {entry.aiSummary && <AIBadge label="Automated Summary" />}
             </div>
 
             <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2 mb-3">{entry.title}</h3>
 
-            {entry.aiSummary && (
-                <div className="p-3 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-100 mb-3">
-                    <div className="flex items-center gap-1 mb-1">
-                        <SparklesIcon className="w-3.5 h-3.5 text-purple-500" />
-                        <span className="text-xs font-semibold text-purple-600">Automated Summary</span>
-                    </div>
-                    <p className="text-xs text-slate-700 line-clamp-3">{entry.aiSummary}</p>
-                </div>
-            )}
-
-            {!entry.aiSummary && (
-                <p className="text-xs text-slate-600 line-clamp-3 mb-3">{entry.description}</p>
-            )}
+            <p className="text-xs text-slate-600 line-clamp-3 mb-3">{entry.description}</p>
 
             {/* Tags */}
             {entry.tags?.length > 0 && (
@@ -213,6 +200,27 @@ function ResearchCard({ entry, isAdmin, isLecturer, onEdit, onDelete }) {
                 <Link to={`/research/${entry._id}`} className="btn-secondary text-xs flex-1 justify-center py-1.5">
                     View Details
                 </Link>
+                {entry.files?.length > 0 && (
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const file = entry.files[0];
+                            const url = getFileUrl(entry._id, file._id);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.setAttribute('download', file.originalName);
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                        }}
+                        className="btn-secondary border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 text-xs flex-1 justify-center py-1.5 flex items-center gap-1"
+                        title={`Download ${entry.files[0].originalName}`}
+                    >
+                        <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+                        Download
+                    </button>
+                )}
                 {(isAdmin || isLecturer) && (
                     <>
                         <button onClick={onEdit} className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" aria-label="Edit">
@@ -246,8 +254,8 @@ export default function ResearchPage() {
             if (filters.year) params.year = filters.year;
             if (filters.fileType) params.fileType = filters.fileType;
             const { data } = await researchAPI.getAll(params);
-            setEntries(data.data.entries);
-            setPagination(data.data.pagination);
+            setEntries(data.data?.entries || []);
+            setPagination(data.data?.pagination || { page: 1, totalPages: 1, total: 0 });
         } catch {
             toast.error('Failed to load research entries');
         } finally {
