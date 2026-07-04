@@ -41,8 +41,8 @@ export default function DashboardPage() {
         document.title = 'Dashboard | SPRAMS';
         dashboardAPI.getStats()
             .then(({ data }) => setStats(data.data))
-            .catch(() => {
-                // Silently fail or show minimal stats
+            .catch((err) => {
+                console.error('Failed to load dashboard stats:', err);
                 setStats(null);
             })
             .finally(() => setLoading(false));
@@ -292,7 +292,7 @@ export default function DashboardPage() {
                         </div>
                     </Link>
 
-                    {isAdmin ? (
+                    {isAdmin && (
                         <Link to="/admin/users" className="group p-6 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-purple-200 transition-all">
                            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                                <UsersIcon className="w-6 h-6 text-purple-600 group-hover:text-white" />
@@ -303,17 +303,6 @@ export default function DashboardPage() {
                                MANAGE USERS <ArrowRightIcon className="w-3 h-3 ml-1" />
                            </div>
                        </Link>
-                    ) : (
-                        <Link to="/ai-assistant" className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl hover:bg-slate-800 transition-all">
-                            <div className="w-12 h-12 bg-primary-600/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-600 transition-colors">
-                                <SparklesIcon className="w-6 h-6 text-primary-400 group-hover:text-white" />
-                            </div>
-                            <h3 className="font-bold text-white">Academic GPT</h3>
-                            <p className="text-sm text-slate-400 mt-1">Get AI-powered insights, summaries, and help with research drafting.</p>
-                            <div className="mt-4 flex items-center text-xs font-bold text-primary-400">
-                                START CONSULTATION <ArrowRightIcon className="w-3 h-3 ml-1" />
-                            </div>
-                        </Link>
                     )}
                 </div>
             </div>
