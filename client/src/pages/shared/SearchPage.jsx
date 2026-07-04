@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { searchAPI } from '../../services/api';
-import { PageSpinner, EmptyState, Pagination, AIBadge, FileTypeBadge } from '../../components/ui/Common';
+import { PageSpinner, EmptyState, Pagination, FileTypeBadge } from '../../components/ui/Common';
 import {
-    MagnifyingGlassIcon, SparklesIcon, FolderOpenIcon, DocumentTextIcon,
+    MagnifyingGlassIcon, FolderOpenIcon, DocumentTextIcon,
     FunnelIcon, XMarkIcon, ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
@@ -107,25 +107,7 @@ export default function SearchPage() {
                         </button>
                     </div>
 
-                    {/* AI Suggestions */}
-                    {results.suggestions?.length > 0 && (
-                        <div className="mt-4 flex flex-wrap items-center gap-2">
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 uppercase tracking-wider mr-1">
-                                <SparklesIcon className="w-3.5 h-3.5" />
-                                <span>AI Related:</span>
-                            </div>
-                            {results.suggestions.map((s) => (
-                                <button
-                                    key={s}
-                                    type="button"
-                                    onClick={() => handleSuggestionClick(s)}
-                                    className="px-3 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm rounded-full border border-purple-100 transition-colors"
-                                >
-                                    {s}
-                                </button>
-                            ))}
-                        </div>
-                    )}
+
                 </form>
 
                 {/* Filters Row */}
@@ -246,7 +228,6 @@ function SearchResultCard({ item, type }) {
                     <span className={`badge ${isProject ? 'badge-blue' : 'badge-purple'} text-[10px] uppercase tracking-wider font-bold`}>
                         {isProject ? item.academicYear : item.year}
                     </span>
-                    {!isProject && item.aiSummary && <AIBadge label="AI Summary" />}
                 </div>
 
                 <h3 className="font-bold text-slate-800 text-sm leading-snug group-hover:text-primary-600 transition-colors line-clamp-2 mb-2">
@@ -254,7 +235,7 @@ function SearchResultCard({ item, type }) {
                 </h3>
 
                 <p className="text-xs text-slate-500 mb-4 line-clamp-3">
-                    {isProject ? item.abstract : (item.aiSummary || item.description)}
+                    {isProject ? item.abstract : item.description}
                 </p>
 
                 <div className="mt-auto pt-3 border-t border-slate-50 flex items-center justify-between">
