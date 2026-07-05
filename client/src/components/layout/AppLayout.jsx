@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../ui/NotificationBell';
 import toast from 'react-hot-toast';
@@ -7,9 +7,9 @@ import {
     HomeIcon, FolderOpenIcon, DocumentTextIcon, MagnifyingGlassIcon,
     UsersIcon, Bars3Icon, XMarkIcon, ChevronDoubleLeftIcon, SparklesIcon,
     ArrowRightOnRectangleIcon, AcademicCapIcon, ClipboardDocumentListIcon,
-    FolderPlusIcon, DocumentPlusIcon, DocumentArrowDownIcon,
+    FolderPlusIcon, DocumentPlusIcon,
     BookOpenIcon, ClipboardDocumentCheckIcon, BellIcon,
-    DocumentDuplicateIcon,
+    DocumentDuplicateIcon, BriefcaseIcon,
 } from '@heroicons/react/24/outline';
 
 const navSections = [
@@ -24,47 +24,40 @@ const navSections = [
         title: 'Explore',
         roles: ['admin', 'lecturer', 'student'],
         items: [
-            { label: 'Projects', icon: FolderOpenIcon, path: '/projects', roles: ['admin', 'lecturer', 'student'] },
-            { label: 'Research', icon: DocumentTextIcon, path: '/research', roles: ['admin', 'lecturer', 'student'] },
-            { label: 'Submission Resources', icon: DocumentArrowDownIcon, path: '/project-resources', roles: ['admin', 'lecturer', 'student'] },
+            { label: 'Projects', icon: FolderOpenIcon, path: '/projects', roles: ['student'] },
+            { label: 'Research', icon: DocumentTextIcon, path: '/research', roles: ['lecturer', 'student'] },
             { label: 'Search', icon: MagnifyingGlassIcon, path: '/search', roles: ['admin', 'lecturer', 'student'] },
         ]
     },
     {
         title: 'Contribute',
-        roles: ['admin', 'lecturer', 'student'],
+        roles: ['lecturer', 'student'],
         items: [
-            { label: 'Add Project', icon: FolderPlusIcon, path: '/add-project', roles: ['admin', 'lecturer', 'student'] },
-            { label: 'Add Research', icon: DocumentPlusIcon, path: '/add-research', roles: ['admin', 'lecturer', 'student'] },
+            { label: 'Add Project', icon: FolderPlusIcon, path: '/add-project', roles: ['student'] },
+            { label: 'Add Research', icon: DocumentPlusIcon, path: '/add-research', roles: ['lecturer', 'student'] },
         ]
     },
     {
         title: 'Student',
         roles: ['student'],
         items: [
-            { label: 'My Research', icon: BookOpenIcon, path: '/student-research', roles: ['student'] },
+            { label: 'My Work', icon: BriefcaseIcon, path: '/workspace', roles: ['student'] },
         ]
     },
     {
         title: 'Lecturer',
-        roles: ['admin', 'lecturer'],
+        roles: ['lecturer'],
         items: [
-            { label: 'My Publications', icon: BookOpenIcon, path: '/lecturer/research', roles: ['admin', 'lecturer'] },
-            { label: 'Evaluations', icon: ClipboardDocumentCheckIcon, path: '/evaluations', roles: ['admin', 'lecturer'] },
+            { label: 'My Publications', icon: BookOpenIcon, path: '/lecturer/research', roles: ['lecturer'] },
+            { label: 'Evaluations', icon: ClipboardDocumentCheckIcon, path: '/evaluations', roles: ['lecturer'] },
         ]
     },
-    {
-        title: 'Intelligence',
-        roles: ['admin', 'lecturer'],
-        items: [
-            { label: 'Academic Assistant', icon: SparklesIcon, path: '/ai-assistant', roles: ['admin', 'lecturer'] },
-        ]
-    },
+
     {
         title: 'Resources',
         roles: ['admin', 'lecturer', 'student'],
         items: [
-            { label: 'Form Templates', icon: DocumentDuplicateIcon, path: '/form-templates', roles: ['admin', 'lecturer', 'student'] },
+            { label: 'Form Templates', icon: DocumentDuplicateIcon, path: '/form-templates', roles: ['admin', 'student'] },
             { label: 'Notifications', icon: BellIcon, path: '/notifications', roles: ['admin', 'lecturer', 'student'] },
         ]
     },
@@ -86,7 +79,7 @@ const roleColors = {
     student: 'badge-green',
 };
 
-export default function AppLayout({ children }) {
+export default function AppLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const { user, logout, isAdmin } = useAuth();
@@ -238,11 +231,7 @@ export default function AppLayout({ children }) {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* Optimized indicator */}
-                        <div className="ai-badge hidden sm:flex">
-                            <SparklesIcon className="w-3 h-3" />
-                            <span>System Optimized</span>
-                        </div>
+
 
                         {/* Notification bell */}
                         <NotificationBell />
@@ -259,7 +248,7 @@ export default function AppLayout({ children }) {
 
                 {/* Page content */}
                 <main className="flex-1 overflow-y-auto p-6" id="main-content">
-                    {children}
+                    <Outlet />
                 </main>
             </div>
         </div>
