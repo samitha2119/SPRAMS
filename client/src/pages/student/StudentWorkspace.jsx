@@ -195,7 +195,96 @@ export default function StudentWorkspace() {
                     </button>
                 </div>
             </div>
+             {/* Split Workspace Layout */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Upload & Submission Form (Left Column) */}
+                            <div className="lg:col-span-1 space-y-6">
+                                {/* Deficit Correction Checklist */}
+                                {project.status === 'Proposed' && (
+                                    <div className="bg-rose-50/50 border border-rose-200 rounded-3xl p-6 shadow-sm space-y-4">
+                                        <h2 className="text-lg font-bold text-rose-800 flex items-center gap-2">
+                                            <ClipboardDocumentCheckIcon className="w-5 h-5 text-rose-700" />
+                                            Corrections Required
+                                        </h2>
+                                        <p className="text-xs text-rose-700 leading-relaxed font-medium">
+                                            The project proposal requires improvements. Please resolve the checklist below before uploading your updated document.
+                                        </p>
+                                        <div className="space-y-3 pt-2">
+                                            {deficits.map((d) => (
+                                                <label key={d.id} className="flex items-start gap-3 cursor-pointer select-none group">
+                                                    <input 
+                                                        type="checkbox"
+                                                        checked={d.resolved}
+                                                        onChange={() => toggleDeficit(d.id)}
+                                                        className="w-4 h-4 rounded text-rose-600 focus:ring-rose-500/20 border-slate-300 mt-0.5"
+                                                    />
+                                                    <span className={`text-xs font-semibold leading-normal ${
+                                                        d.resolved ? 'text-rose-500/60 line-through' : 'text-rose-800'
+                                                    }`}>
+                                                        {d.text}
+                                                    </span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+            
+                                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
+                                    <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                        <ArrowUpTrayIcon className="w-5 h-5 text-green-600" />
+                                        Submit Deliverable
+                                    </h2>
+                                    
+                                    <form onSubmit={handleUploadSubmit} className="space-y-5">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Submission Type</label>
+                                            <select 
+                                                value={selectedType}
+                                                onChange={(e) => setSelectedType(e.target.value)}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                                            >
+                                                <option value="Proposal">Proposal</option>
+                                                <option value="Progress Report">Progress Report</option>
+                                                <option value="Final Report">Final Report</option>
+                                            </select>
+                                        </div>
+            
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Draft File</label>
+                                            <div className="border-2 border-dashed border-slate-200 hover:border-green-400 bg-slate-50/50 hover:bg-slate-50 transition-colors rounded-2xl p-6 text-center cursor-pointer relative">
+                                                <input 
+                                                    type="file" 
+                                                    onChange={handleFileChange}
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                />
+                                                <div className="space-y-2">
+                                                    <DocumentTextIcon className="w-8 h-8 text-slate-400 mx-auto" />
+                                                    <span className="block text-xs font-bold text-green-600">
+                                                        {selectedFile ? selectedFile.name : 'Choose file...'}
+                                                    </span>
+                                                    <span className="block text-[10px] text-slate-400 font-medium">PDF, ZIP, DOCX up to 100MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+            
+                                        <button 
+                                            type="submit" 
+                                            disabled={uploading || !selectedFile || (project.status === 'Proposed' && !deficits.every(d => d.resolved))}
+                                            className={`w-full py-3 rounded-xl font-bold text-sm text-white transition-all flex items-center justify-center gap-2 ${
+                                                uploading || !selectedFile || (project.status === 'Proposed' && !deficits.every(d => d.resolved))
+                                                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none'
+                                                    : 'bg-green-600 hover:bg-green-700 shadow-md shadow-green-600/10'
+                                            }`}
+                                        >
+                                            {uploading ? 'Uploading...' : 'Upload Submission'}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
 
-        </div>
-    );
-}
+    
+
