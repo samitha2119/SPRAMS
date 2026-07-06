@@ -18,6 +18,7 @@ export default function LecturerResearchPage() {
     const [showForm, setShowForm] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [form, setForm] = useState(INITIAL_FORM);
+    const [files, setFiles] = useState([]);
     const [submitting, setSubmitting] = useState(false);
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState({});
@@ -42,6 +43,7 @@ export default function LecturerResearchPage() {
 
     const resetForm = () => {
         setForm(INITIAL_FORM);
+        setFiles([]);
         setEditingId(null);
         setShowForm(false);
     };
@@ -71,17 +73,34 @@ export default function LecturerResearchPage() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const payload = {
-                ...form,
-                keywords: form.keywords.split(',').map((k) => k.trim()).filter(Boolean),
-                coAuthors: form.coAuthors.split(',').map((a) => a.trim()).filter(Boolean),
-            };
+            const formData = new FormData();
+            formData.append('title', form.title);
+            formData.append('abstract', form.abstract);
+            formData.append('department', form.department);
+            formData.append('year', form.year);
+            formData.append('publicationTitle', form.publicationTitle);
+            formData.append('journalName', form.journalName);
+            formData.append('volume', form.volume);
+            formData.append('issueNumber', form.issueNumber);
+            formData.append('pages', form.pages);
+            formData.append('doi', form.doi);
+            formData.append('publicationUrl', form.publicationUrl);
+            formData.append('status', form.status);
+            formData.append('keywords', JSON.stringify(
+                form.keywords.split(',').map((k) => k.trim()).filter(Boolean)
+            ));
+            formData.append('coAuthors', JSON.stringify(
+                form.coAuthors.split(',').map((a) => a.trim()).filter(Boolean)
+            ));
+            for (const file of files) {
+                formData.append('files', file);
+            }
 
             if (editingId) {
-                await lecturerResearchAPI.update(editingId, payload);
+                await lecturerResearchAPI.update(editingId, formData);
                 toast.success('Research updated');
             } else {
-                await lecturerResearchAPI.create(payload);
+                await lecturerResearchAPI.create(formData);
                 toast.success('Research added');
             }
             resetForm();
@@ -177,6 +196,94 @@ export default function LecturerResearchPage() {
                                 onChange={(e) => setForm({ ...form, coAuthors: e.target.value })}
                             />
                         </div>
+                    </div>
+
+                    {/* Publication details */}
+                    <div className="border-t pt-4 mt-2">
+                        <h3 className="font-medium text-slate-600 mb-3 text-sm">Publication Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                                <label className="form-label">Publication Title</label>
+                                <input
+                                    type="text" className="form-input"
+                                    value={form.publicationTitle}
+                                    onChange={(e) => setForm({ ...form, publicationTitle: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="form-label">Journal Name</label>
+                                <input
+                                    type="text" className="form-input"
+                                    value={form.journalName}
+                                    onChange={(e) => setForm({ ...form, journalName: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="form-label">DOI</label>
+                                <input
+                                    type="text" className="form-input"
+                                    value={form.doi}
+                                    onChange={(e) => setForm({ ...form, doi: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="form-label">Volume</label>
+                                <input
+                                    type="text" className="form-input"
+                                    value={form.volume}
+                                    onChange={(e) => setForm({ ...form, volume: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="form-label">Issue</label>
+                                <input
+                                    type="text" className="form-input"
+                                    value={form.issueNumber}
+                                    onChange={(e) => setForm({ ...form, issueNumber: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="form-label">Pages</label>
+                                <input
+                                    type="text" className="form-input"
+                                    placeholder="1-25"
+                                    value={form.pages}
+                                    onChange={(e) => setForm({ ...form, pages: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="form-label">Publication URL</label>
+                                <input
+                                    type="url" className="form-input"
+                                    value={form.publicationUrl}
+                                    onChange={(e) => setForm({ ...form, publicationUrl: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="form-label">Status</label>
+                                <select
+                                    className="form-input"
+                                    value={form.status}
+                                    onChange={(e) => setForm({ ...form, status: e.target.value })}
+                                >
+                                    <option value="Draft">Draft</option>
+                                    <option value="Submitted">Submitted</option>
+                                    <option value="Published">Published</option>
+                                    <option value="Archived">Archived</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Files */}
+                    <div>
+                        <label className="form-label">Attach Files</label>
+                        <input
+                            type="file" multiple
+                            className="form-input"
+                            onChange={(e) => setFiles([...e.target.files])}
+                        />
+                        <p className="text-xs text-slate-400 mt-1">Max 10 files, 1GB each</p>
                     </div>
 
                     <div className="flex gap-3 pt-2">
