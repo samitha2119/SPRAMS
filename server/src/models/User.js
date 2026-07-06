@@ -7,8 +7,9 @@ userSchema.pre('save', async function (next) {
 });
 
 // NEW: Hash password before updating (Runs on findByIdAndUpdate / findOneAndUpdate)
-userSchema.pre('findOneAndUpdate', async function (next) {
+userSchema.pre('findOneAndUpdate',async function (next) {
     const update = this.getUpdate();
+     con
     
     // Check if passwordHash is being modified in this update payload
     if (update.passwordHash) {
