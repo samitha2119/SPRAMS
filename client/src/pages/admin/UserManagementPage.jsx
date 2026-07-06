@@ -108,3 +108,124 @@ function CreateUserForm({ onClose, onSuccess }) {
     );
 }
 
+function UserForm({ onClose, onSuccess, initialData }) {
+    const [loading, setLoading] = useState(false);
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        defaultValues: initialData || {
+            role: 'student', isActive: true
+        }
+    });
+
+    const onSubmit = async (data) => {
+        setLoading(true);
+        try {
+            await dashboardAPI.updateUser(initialData._id, data);
+            toast.success('User updated successfully');
+            onSuccess();
+            onClose();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to update user');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
+                <p className="text-sm font-bold text-slate-800">{initialData.name}</p>
+                <p className="text-xs text-slate-500">{initialData.email}</p>
+            </div>
+
+            <div>
+                <label className="label">Access Role</label>
+                <select className="input-field" {...register('role', { required: true })}>
+                    <option value="student">Student (Read-only)</option>
+                    <option value="lecturer">Lecturer (Advanced Access)</option>
+                    <option value="admin">System Admin (Full Access)</option>
+                </select>
+            </div>
+
+            <div className="flex items-center gap-2 py-2">
+                <input
+                    type="checkbox"
+                    id="isActive"
+                    className="w-4 h-4 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+                    {...register('isActive')}
+                />
+                <label htmlFor="isActive" className="text-sm font-medium text-slate-700 cursor-pointer">
+                    Account Active (User can log in)
+                </label>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+                <button type="submit" disabled={loading} className="btn-primary flex-1">
+                    {loading ? <Spinner size="sm" /> : 'Save Changes'}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+export default function UserManagementPage() {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+    const [filters, setFilters] = useState({ role: '', isActive: '' });
+    const [editUser, setEditUser] = useState(null);
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+
+    const fetchUsers = useCallback(async (page = 1) => {
+        setLoading(true);
+        try {
+            const { data } = await dashboardAPI.getUsers({ page, ...filters });
+            setUsers(data.data.users);
+            setPagination(data.data.pagination);
+        } catch {
+            setError('Failed to load users.');
+        } finally {
+            setLoading(false);
+        }
+    }, [filters]);
+
+    useEffect(() => {
+        document.title = 'User Management | SPRAMS';
+        fetchUsers(1);
+    }, [fetchUsers]);
+
+    const handleDelete = async () => {
+        setDeleteLoading(true);
+        try {
+            await dashboardAPI.deleteUser(deleteConfirm._id);
+            toast.success('User deleted');
+            setDeleteConfirm(null);
+            fetchUsers(pagination.page);
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Delete failed');
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-6 fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <UsersIcon className="w-7 h-7 text-primary-600" />
+                        User Management
+                    </h1>
+                    <p className="text-slate-500 text-sm mt-0.5">Control access and roles across the system</p>
+                </div>
+                <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="btn-primary flex items-center gap-2"
+                >
+                    <UserPlusIcon className="w-5 h-5" />
+                    Add New User
+                </button>
+            </div>
