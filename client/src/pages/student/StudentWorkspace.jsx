@@ -195,282 +195,301 @@ export default function StudentWorkspace() {
                     </button>
                 </div>
             </div>
-             {/* Split Workspace Layout */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* Upload & Submission Form (Left Column) */}
-                            <div className="lg:col-span-1 space-y-6">
-                                {/* Deficit Correction Checklist */}
-                                {project.status === 'Proposed' && (
-                                    <div className="bg-rose-50/50 border border-rose-200 rounded-3xl p-6 shadow-sm space-y-4">
-                                        <h2 className="text-lg font-bold text-rose-800 flex items-center gap-2">
-                                            <ClipboardDocumentCheckIcon className="w-5 h-5 text-rose-700" />
-                                            Corrections Required
-                                        </h2>
-                                        <p className="text-xs text-rose-700 leading-relaxed font-medium">
-                                            The project proposal requires improvements. Please resolve the checklist below before uploading your updated document.
-                                        </p>
-                                        <div className="space-y-3 pt-2">
-                                            {deficits.map((d) => (
-                                                <label key={d.id} className="flex items-start gap-3 cursor-pointer select-none group">
-                                                    <input 
-                                                        type="checkbox"
-                                                        checked={d.resolved}
-                                                        onChange={() => toggleDeficit(d.id)}
-                                                        className="w-4 h-4 rounded text-rose-600 focus:ring-rose-500/20 border-slate-300 mt-0.5"
-                                                    />
-                                                    <span className={`text-xs font-semibold leading-normal ${
-                                                        d.resolved ? 'text-rose-500/60 line-through' : 'text-rose-800'
-                                                    }`}>
-                                                        {d.text}
-                                                    </span>
-                                                </label>
-                                            ))}
-                                        </div>
+
+            {/* Team Profiles Grid */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <UserGroupIcon className="w-5 h-5 text-green-600" />
+                    Group Members & Workspace Profiles
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {groupMembers.map((m, index) => {
+                        const isLeader = index === 0; // First student in list acts as Leader
+                        return (
+                            <div key={m.studentID} className="bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 transition-colors">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                                    isLeader ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-700'
+                                }`}>
+                                    {m.name.charAt(0)}
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="font-bold text-slate-800 text-sm truncate">{m.name}</p>
+                                    <p className="text-xs text-slate-400 truncate uppercase font-medium">{m.registrationNumber}</p>
+                                </div>
+                                <span className={`ml-auto text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded ${
+                                    isLeader ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-500'
+                                }`}>
+                                    {isLeader ? 'Leader' : 'Member'}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Visual Progress Timeline */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">Workspace Milestones Progress</h3>
+                <div className="relative flex items-center justify-between">
+                    <div className="absolute left-0 right-0 h-1 bg-slate-100 -z-0"></div>
+                    <div 
+                        className="absolute left-0 h-1 bg-green-500 transition-all duration-500 -z-0"
+                        style={{ width: `${(currentStepIndex / (statusSteps.length - 1)) * 100}%` }}
+                    ></div>
+
+                    {statusSteps.map((step, idx) => {
+                        const isActive = idx <= currentStepIndex;
+                        const isCurrent = idx === currentStepIndex;
+
+                        return (
+                            <div key={step} className="flex flex-col items-center relative z-10">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${
+                                    isCurrent ? 'bg-green-600 border-green-600 text-white ring-4 ring-green-100' :
+                                    isActive ? 'bg-emerald-500 border-emerald-500 text-white' :
+                                    'bg-white border-slate-200 text-slate-400'
+                                }`}>
+                                    {isActive ? <CheckCircleIcon className="w-5 h-5" /> : idx + 1}
+                                </div>
+                                <span className={`text-[11px] font-extrabold mt-3 tracking-wide uppercase ${isActive ? 'text-slate-800' : 'text-slate-400'}`}>
+                                    {step === 'Proposed' ? 'Proposal Approved' :
+                                     step === 'Approved' ? 'SRS Documentation' :
+                                     step === 'Ongoing' ? 'Mid-Evaluation' : 'Final Upload'}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Split Workspace Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Upload & Submission Form (Left Column) */}
+                <div className="lg:col-span-1 space-y-6">
+                    {/* Deficit Correction Checklist */}
+                    {project.status === 'Proposed' && (
+                        <div className="bg-rose-50/50 border border-rose-200 rounded-3xl p-6 shadow-sm space-y-4">
+                            <h2 className="text-lg font-bold text-rose-800 flex items-center gap-2">
+                                <ClipboardDocumentCheckIcon className="w-5 h-5 text-rose-700" />
+                                Corrections Required
+                            </h2>
+                            <p className="text-xs text-rose-700 leading-relaxed font-medium">
+                                The project proposal requires improvements. Please resolve the checklist below before uploading your updated document.
+                            </p>
+                            <div className="space-y-3 pt-2">
+                                {deficits.map((d) => (
+                                    <label key={d.id} className="flex items-start gap-3 cursor-pointer select-none group">
+                                        <input 
+                                            type="checkbox"
+                                            checked={d.resolved}
+                                            onChange={() => toggleDeficit(d.id)}
+                                            className="w-4 h-4 rounded text-rose-600 focus:ring-rose-500/20 border-slate-300 mt-0.5"
+                                        />
+                                        <span className={`text-xs font-semibold leading-normal ${
+                                            d.resolved ? 'text-rose-500/60 line-through' : 'text-rose-800'
+                                        }`}>
+                                            {d.text}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
+                        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <ArrowUpTrayIcon className="w-5 h-5 text-green-600" />
+                            Submit Deliverable
+                        </h2>
+                        
+                        <form onSubmit={handleUploadSubmit} className="space-y-5">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Submission Type</label>
+                                <select 
+                                    value={selectedType}
+                                    onChange={(e) => setSelectedType(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                                >
+                                    <option value="Proposal">Proposal</option>
+                                    <option value="Progress Report">Progress Report</option>
+                                    <option value="Final Report">Final Report</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Draft File</label>
+                                <div className="border-2 border-dashed border-slate-200 hover:border-green-400 bg-slate-50/50 hover:bg-slate-50 transition-colors rounded-2xl p-6 text-center cursor-pointer relative">
+                                    <input 
+                                        type="file" 
+                                        onChange={handleFileChange}
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                    />
+                                    <div className="space-y-2">
+                                        <DocumentTextIcon className="w-8 h-8 text-slate-400 mx-auto" />
+                                        <span className="block text-xs font-bold text-green-600">
+                                            {selectedFile ? selectedFile.name : 'Choose file...'}
+                                        </span>
+                                        <span className="block text-[10px] text-slate-400 font-medium">PDF, ZIP, DOCX up to 100MB</span>
                                     </div>
-                                )}
-            
-                                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
-                                    <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                        <ArrowUpTrayIcon className="w-5 h-5 text-green-600" />
-                                        Submit Deliverable
-                                    </h2>
-                                    
-                                    <form onSubmit={handleUploadSubmit} className="space-y-5">
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Submission Type</label>
-                                            <select 
-                                                value={selectedType}
-                                                onChange={(e) => setSelectedType(e.target.value)}
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-green-500/20"
-                                            >
-                                                <option value="Proposal">Proposal</option>
-                                                <option value="Progress Report">Progress Report</option>
-                                                <option value="Final Report">Final Report</option>
-                                            </select>
-                                        </div>
-            
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Draft File</label>
-                                            <div className="border-2 border-dashed border-slate-200 hover:border-green-400 bg-slate-50/50 hover:bg-slate-50 transition-colors rounded-2xl p-6 text-center cursor-pointer relative">
-                                                <input 
-                                                    type="file" 
-                                                    onChange={handleFileChange}
-                                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                                />
-                                                <div className="space-y-2">
-                                                    <DocumentTextIcon className="w-8 h-8 text-slate-400 mx-auto" />
-                                                    <span className="block text-xs font-bold text-green-600">
-                                                        {selectedFile ? selectedFile.name : 'Choose file...'}
-                                                    </span>
-                                                    <span className="block text-[10px] text-slate-400 font-medium">PDF, ZIP, DOCX up to 100MB</span>
-                                                </div>
-                                            </div>
-                                        </div>
-            
-                                        <button 
-                                            type="submit" 
-                                            disabled={uploading || !selectedFile || (project.status === 'Proposed' && !deficits.every(d => d.resolved))}
-                                            className={`w-full py-3 rounded-xl font-bold text-sm text-white transition-all flex items-center justify-center gap-2 ${
-                                                uploading || !selectedFile || (project.status === 'Proposed' && !deficits.every(d => d.resolved))
-                                                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none'
-                                                    : 'bg-green-600 hover:bg-green-700 shadow-md shadow-green-600/10'
-                                            }`}
-                                        >
-                                            {uploading ? 'Uploading...' : 'Upload Submission'}
-                                        </button>
-                                    </form>
                                 </div>
                             </div>
-                            {/* Submissions History & Feedback Timeline (Right Column) */}
-                                            <div className="lg:col-span-2 space-y-6">
-                                                {/* Iterative Submissions Version History */}
-                                                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                                                    <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                                        <DocumentTextIcon className="w-5 h-5 text-green-600" />
-                                                        Version Control History
-                                                    </h2>
-                                                    
-                                                    {submissions.length === 0 ? (
-                                                        <div className="bg-slate-50 rounded-2xl p-8 text-center text-slate-400 italic text-sm border border-slate-200">
-                                                            No files uploaded yet.
-                                                        </div>
-                                                    ) : (
-                                                        <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm bg-white">
-                                                            <table className="min-w-full divide-y divide-slate-100 text-left text-xs">
-                                                                <thead className="bg-slate-50">
-                                                                    <tr>
-                                                                        <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Type</th>
-                                                                        <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Version</th>
-                                                                        <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">File Name</th>
-                                                                        <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Uploaded By</th>
-                                                                        <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider text-right">Download</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody className="divide-y divide-slate-100 bg-white">
-                                                                    {submissions.map((sub) => (
-                                                                        <tr key={sub.submissionID} className="hover:bg-slate-50/50 transition-colors">
-                                                                            <td className="px-4 py-3">
-                                                                                <span className={`px-2.5 py-0.5 rounded font-bold uppercase tracking-wider text-[9px] ${
-                                                                                    sub.submissionType === 'Proposal' ? 'bg-blue-100 text-blue-800' :
-                                                                                    sub.submissionType === 'Progress Report' ? 'bg-amber-100 text-amber-800' :
-                                                                                    'bg-purple-100 text-purple-800'
-                                                                                }`}>
-                                                                                    {sub.submissionType}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td className="px-4 py-3 font-bold text-slate-700">v{sub.versionNumber}</td>
-                                                                            <td className="px-4 py-3 font-semibold text-slate-600 truncate max-w-[200px]" title={sub.originalName}>
-                                                                                {sub.originalName}
-                                                                            </td>
-                                                                            <td className="px-4 py-3 font-medium text-slate-500">
-                                                                                {sub.submittedBy?.name || 'Student'}
-                                                                            </td>
-                                                                            <td className="px-4 py-3 text-right">
-                                                                                <a 
-                                                                                    href={`${api.defaults.baseURL}/workspace/download/${sub.submissionID}?token=${localStorage.getItem('archive_access_token')}`}
-                                                                                    download
-                                                                                    className="inline-flex items-center gap-1 text-xs text-green-600 hover:text-green-800 font-bold hover:underline"
-                                                                                >
-                                                                                    <ArrowDownTrayIcon className="w-4.5 h-4.5" /> Download
-                                                                                </a>
-                                                                            </td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    )}
+
+                            <button 
+                                type="submit" 
+                                disabled={uploading || !selectedFile || (project.status === 'Proposed' && !deficits.every(d => d.resolved))}
+                                className={`w-full py-3 rounded-xl font-bold text-sm text-white transition-all flex items-center justify-center gap-2 ${
+                                    uploading || !selectedFile || (project.status === 'Proposed' && !deficits.every(d => d.resolved))
+                                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none'
+                                        : 'bg-green-600 hover:bg-green-700 shadow-md shadow-green-600/10'
+                                }`}
+                            >
+                                {uploading ? 'Uploading...' : 'Upload Submission'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {/* Submissions History & Feedback Timeline (Right Column) */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* Iterative Submissions Version History */}
+                    <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                        <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <DocumentTextIcon className="w-5 h-5 text-green-600" />
+                            Version Control History
+                        </h2>
+                        
+                        {submissions.length === 0 ? (
+                            <div className="bg-slate-50 rounded-2xl p-8 text-center text-slate-400 italic text-sm border border-slate-200">
+                                No files uploaded yet.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm bg-white">
+                                <table className="min-w-full divide-y divide-slate-100 text-left text-xs">
+                                    <thead className="bg-slate-50">
+                                        <tr>
+                                            <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Type</th>
+                                            <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Version</th>
+                                            <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">File Name</th>
+                                            <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Uploaded By</th>
+                                            <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider text-right">Download</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 bg-white">
+                                        {submissions.map((sub) => (
+                                            <tr key={sub.submissionID} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-4 py-3">
+                                                    <span className={`px-2.5 py-0.5 rounded font-bold uppercase tracking-wider text-[9px] ${
+                                                        sub.submissionType === 'Proposal' ? 'bg-blue-100 text-blue-800' :
+                                                        sub.submissionType === 'Progress Report' ? 'bg-amber-100 text-amber-800' :
+                                                        'bg-purple-100 text-purple-800'
+                                                    }`}>
+                                                        {sub.submissionType}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 font-bold text-slate-700">v{sub.versionNumber}</td>
+                                                <td className="px-4 py-3 font-semibold text-slate-600 truncate max-w-[200px]" title={sub.originalName}>
+                                                    {sub.originalName}
+                                                </td>
+                                                <td className="px-4 py-3 font-medium text-slate-500">
+                                                    {sub.submittedBy?.name || 'Student'}
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <a 
+                                                        href={`${api.defaults.baseURL}/workspace/download/${sub.submissionID}?token=${localStorage.getItem('archive_access_token')}`}
+                                                        download
+                                                        className="inline-flex items-center gap-1 text-xs text-green-600 hover:text-green-800 font-bold hover:underline"
+                                                    >
+                                                        <ArrowDownTrayIcon className="w-4.5 h-4.5" /> Download
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Feedback Stream Loop */}
+                    <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                        <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                            <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-600" />
+                            Real-time Supervisor Feedback Loop
+                        </h2>
+
+                        {evaluations.length === 0 ? (
+                            <div className="bg-slate-50 rounded-2xl p-8 text-center text-slate-400 italic text-sm border border-slate-200">
+                                No feedback remarks received yet.
+                            </div>
+                        ) : (
+                            <div className="relative pl-6 border-l-2 border-slate-100 space-y-6">
+                                {evaluations.map((evalItem) => (
+                                    <div key={evalItem.evaluationID} className="relative">
+                                        {/* Dot Indicator */}
+                                        <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-2 border-green-600 bg-white"></div>
+                                        
+                                        <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-200 space-y-3 hover:bg-slate-50 transition-colors">
+                                            <div className="flex items-center justify-between flex-wrap gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-slate-800 text-sm">{evalItem.gradedBy}</span>
+                                                    <span className="text-[10px] text-slate-400 font-semibold uppercase flex items-center gap-1">
+                                                        <CalendarIcon className="w-3.5 h-3.5" />
+                                                        {new Date(evalItem.createdAt).toLocaleDateString()}
+                                                    </span>
                                                 </div>
-                            
-                                                {/* Feedback Stream Loop */}
-                                                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                                                    <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                                        <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-600" />
-                                                        Real-time Supervisor Feedback Loop
-                                                    </h2>
-                            
-                                                    {evaluations.length === 0 ? (
-                                                        <div className="bg-slate-50 rounded-2xl p-8 text-center text-slate-400 italic text-sm border border-slate-200">
-                                                            No feedback remarks received yet.
-                                                        </div>
-                                                    ) : (
-                                                        <div className="relative pl-6 border-l-2 border-slate-100 space-y-6">
-                                                            {evaluations.map((evalItem) => (
-                                                                <div key={evalItem.evaluationID} className="relative">
-                                                                    {/* Dot Indicator */}
-                                                                    <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-2 border-green-600 bg-white"></div>
-                                                                    
-                                                                    <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-200 space-y-3 hover:bg-slate-50 transition-colors">
-                                                                        <div className="flex items-center justify-between flex-wrap gap-2">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <span className="font-bold text-slate-800 text-sm">{evalItem.gradedBy}</span>
-                                                                                <span className="text-[10px] text-slate-400 font-semibold uppercase flex items-center gap-1">
-                                                                                    <CalendarIcon className="w-3.5 h-3.5" />
-                                                                                    {new Date(evalItem.createdAt).toLocaleDateString()}
-                                                                                </span>
-                                                                            </div>
-                                                                            {evalItem.marks !== null && (
-                                                                                <span className="bg-green-100 text-green-800 font-extrabold text-xs px-2.5 py-1 rounded-lg">
-                                                                                    Grade: {evalItem.marks}/100
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
-                                                                            {evalItem.feedback}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                            
-                                        {/* One-Click Citation Exporter Modal */}
-                                        {showCitationModal && (
-                                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-                                                <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 max-w-lg w-full space-y-6">
-                                                    <div className="flex items-center justify-between border-b pb-3">
-                                                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                                            <CpuChipIcon className="w-5 h-5 text-green-600" />
-                                                            One-Click Citation Generator
-                                                        </h3>
-                                                        <button onClick={() => setShowCitationModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">Close</button>
-                                                    </div>
-                            
-                                                    <div className="space-y-4">
-                                                        {['APA', 'IEEE', 'Harvard'].map((format) => {
-                                                            const citation = generateCitation(format);
-                                                            return (
-                                                                <div key={format} className="space-y-1.5">
-                                                                    <div className="flex justify-between items-center">
-                                                                        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">{format} Format</span>
-                                                                        <button 
-                                                                            onClick={() => copyToClipboard(citation)}
-                                                                            className="text-[10px] text-green-600 font-bold hover:underline"
-                                                                        >
-                                                                            Copy
-                                                                        </button>
-                                                                    </div>
-                                                                    <div className="p-3 bg-slate-50 border rounded-xl text-xs text-slate-600 font-medium select-all leading-normal">
-                                                                        {citation}
-                                                                    </div>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                     {/* One-Click Citation Exporter Modal */}
-                                                {showCitationModal && (
-                                                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-                                                        <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 max-w-lg w-full space-y-6">
-                                                            <div className="flex items-center justify-between border-b pb-3">
-                                                                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                                                    <CpuChipIcon className="w-5 h-5 text-green-600" />
-                                                                    One-Click Citation Generator
-                                                                </h3>
-                                                                <button onClick={() => setShowCitationModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">Close</button>
-                                                            </div>
-                                    
-                                                            <div className="space-y-4">
-                                                                {['APA', 'IEEE', 'Harvard'].map((format) => {
-                                                                    const citation = generateCitation(format);
-                                                                    return (
-                                                                        <div key={format} className="space-y-1.5">
-                                                                            <div className="flex justify-between items-center">
-                                                                                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">{format} Format</span>
-                                                                                <button 
-                                                                                    onClick={() => copyToClipboard(citation)}
-                                                                                    className="text-[10px] text-green-600 font-bold hover:underline"
-                                                                                >
-                                                                                    Copy
-                                                                                </button>
-                                                                            </div>
-                                                                            <div className="p-3 bg-slate-50 border rounded-xl text-xs text-slate-600 font-medium select-all leading-normal">
-                                                                                {citation}
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                {evalItem.marks !== null && (
+                                                    <span className="bg-green-100 text-green-800 font-extrabold text-xs px-2.5 py-1 rounded-lg">
+                                                        Grade: {evalItem.marks}/100
+                                                    </span>
                                                 )}
                                             </div>
-                                        );
-                                    }
-                                    
-                        
-                            
-                            
-                    
-                    
-            
-            
+                                            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                                {evalItem.feedback}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
 
-    
+            {/* One-Click Citation Exporter Modal */}
+            {showCitationModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 max-w-lg w-full space-y-6">
+                        <div className="flex items-center justify-between border-b pb-3">
+                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <CpuChipIcon className="w-5 h-5 text-green-600" />
+                                One-Click Citation Generator
+                            </h3>
+                            <button onClick={() => setShowCitationModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">Close</button>
+                        </div>
 
+                        <div className="space-y-4">
+                            {['APA', 'IEEE', 'Harvard'].map((format) => {
+                                const citation = generateCitation(format);
+                                return (
+                                    <div key={format} className="space-y-1.5">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">{format} Format</span>
+                                            <button 
+                                                onClick={() => copyToClipboard(citation)}
+                                                className="text-[10px] text-green-600 font-bold hover:underline"
+                                            >
+                                                Copy
+                                            </button>
+                                        </div>
+                                        <div className="p-3 bg-slate-50 border rounded-xl text-xs text-slate-600 font-medium select-all leading-normal">
+                                            {citation}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
