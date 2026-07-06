@@ -1,9 +1,14 @@
-isRead: {
-    type: Boolean,
-    default: false,
-},
+notificationSchema.index({
+    recipientId: 1,
+    isRead: 1,
+    createdAt: -1,
+});
 
-readAt: {
-    type: Date,
-    default: null,
-},
+notificationSchema.index({
+    recipientId: 1,
+    createdAt: -1,
+});
+
+notificationSchema.index({
+    type: 1,
+});
