@@ -18,6 +18,7 @@ const typeIcons = {
     SYSTEM_ANNOUNCEMENT: '📢',
     RECORD_ADDED: '📝',
     USER_ACTION: '👤',
+    APPROVAL_REQUEST: '🔔',
 };
 
 export default function NotificationsPage() {
