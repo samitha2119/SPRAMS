@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { dashboardAPI } from '../../services/api';
-import { StatCard, PageSpinner } from '../../components/ui/Common';
+import { StatCard, PageSpinner, AIBadge } from '../../components/ui/Common';
 import {
     FolderOpenIcon, DocumentTextIcon, UsersIcon, ServerIcon,
-    ClipboardDocumentListIcon, SparklesIcon, ArrowRightIcon, 
-    UserGroupIcon, ShieldCheckIcon, DocumentChartBarIcon, AcademicCapIcon,
+    ClipboardDocumentListIcon, SparklesIcon, ClockIcon,
+    ArrowRightIcon, UserGroupIcon, ShieldCheckIcon,
+    DocumentChartBarIcon, AcademicCapIcon,
 } from '@heroicons/react/24/outline';
 import { formatDistanceToNow } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -80,7 +81,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Research Statistics Section */}
+            {/* Research Statistics Section (New) */}
             {!isAdmin && stats && stats.researchStats && (
                 <div className="space-y-6 animate-slide-up">
                     <div className="flex items-center gap-3">
@@ -255,6 +256,82 @@ export default function DashboardPage() {
                                     VIEW ALL LOGS <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Quick Actions / Shortcuts */}
+            <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-slate-800">Operational Hub</h2>
+                    <div className="h-px bg-slate-200 flex-1" />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Primary Actions for all */}
+                    <Link to="/projects" className="group p-6 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-primary-200 transition-all">
+                        <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-600 group-hover:text-white transition-colors">
+                            <FolderOpenIcon className="w-6 h-6 text-primary-600 group-hover:text-white" />
+                        </div>
+                        <h3 className="font-bold text-slate-800">Project Archive</h3>
+                        <p className="text-sm text-slate-500 mt-1">Access the university's full collection of undergraduate projects.</p>
+                        <div className="mt-4 flex items-center text-xs font-bold text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                            EXPLORE NOW <ArrowRightIcon className="w-3 h-3 ml-1" />
+                        </div>
+                    </Link>
+
+                    <Link to="/research" className="group p-6 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-green-200 transition-all">
+                        <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors">
+                            <AcademicCapIcon className="w-6 h-6 text-green-600 group-hover:text-white" />
+                        </div>
+                        <h3 className="font-bold text-slate-800">Research Portal</h3>
+                        <p className="text-sm text-slate-500 mt-1">Discover peer-reviewed journals, articles, and scientific publications.</p>
+                        <div className="mt-4 flex items-center text-xs font-bold text-green-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                            BROWSE REPOSITORY <ArrowRightIcon className="w-3 h-3 ml-1" />
+                        </div>
+                    </Link>
+
+                    {isAdmin && (
+                        <Link to="/admin/users" className="group p-6 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-purple-200 transition-all">
+                           <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                               <UsersIcon className="w-6 h-6 text-purple-600 group-hover:text-white" />
+                           </div>
+                           <h3 className="font-bold text-slate-800">User Governance</h3>
+                           <p className="text-sm text-slate-500 mt-1">Manage institutional access, roles, and administrative permissions.</p>
+                           <div className="mt-4 flex items-center text-xs font-bold text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                               MANAGE USERS <ArrowRightIcon className="w-3 h-3 ml-1" />
+                           </div>
+                       </Link>
+                    )}
+                </div>
+            </div>
+
+            {/* Support & Resources Footer Section */}
+            {!isAdmin && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-8 rounded-3xl border border-slate-100">
+                    <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                            <ShieldCheckIcon className="w-5 h-5 text-slate-600" />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-slate-800 mb-1">Upload Guidelines</h4>
+                            <p className="text-sm text-slate-500 mb-3">Ensure your submissions meet the university's academic standards and file size limits.</p>
+                            <Link to="/project-resources" className="text-xs font-bold text-primary-600 hover:underline inline-flex items-center gap-1">
+                                View Policy <ArrowRightIcon className="w-3 h-3" />
+                            </Link>
+                        </div>
+                    </div>
+                     <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                            <ClipboardDocumentListIcon className="w-5 h-5 text-slate-600" />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-slate-800 mb-1">Standard Forms</h4>
+                            <p className="text-sm text-slate-500 mb-3">Download required PDF templates for project proposals and final evaluations.</p>
+                            <Link to="/form-templates" className="text-xs font-bold text-primary-600 hover:underline inline-flex items-center gap-1">
+                                Download Templates <ArrowRightIcon className="w-3 h-3" />
+                            </Link>
                         </div>
                     </div>
                 </div>
