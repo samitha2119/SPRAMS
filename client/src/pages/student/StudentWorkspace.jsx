@@ -281,10 +281,156 @@ export default function StudentWorkspace() {
                                     </form>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                );
-            }
+                            {/* Submissions History & Feedback Timeline (Right Column) */}
+                                            <div className="lg:col-span-2 space-y-6">
+                                                {/* Iterative Submissions Version History */}
+                                                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                                                    <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                                        <DocumentTextIcon className="w-5 h-5 text-green-600" />
+                                                        Version Control History
+                                                    </h2>
+                                                    
+                                                    {submissions.length === 0 ? (
+                                                        <div className="bg-slate-50 rounded-2xl p-8 text-center text-slate-400 italic text-sm border border-slate-200">
+                                                            No files uploaded yet.
+                                                        </div>
+                                                    ) : (
+                                                        <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm bg-white">
+                                                            <table className="min-w-full divide-y divide-slate-100 text-left text-xs">
+                                                                <thead className="bg-slate-50">
+                                                                    <tr>
+                                                                        <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Type</th>
+                                                                        <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Version</th>
+                                                                        <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">File Name</th>
+                                                                        <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Uploaded By</th>
+                                                                        <th scope="col" className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider text-right">Download</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody className="divide-y divide-slate-100 bg-white">
+                                                                    {submissions.map((sub) => (
+                                                                        <tr key={sub.submissionID} className="hover:bg-slate-50/50 transition-colors">
+                                                                            <td className="px-4 py-3">
+                                                                                <span className={`px-2.5 py-0.5 rounded font-bold uppercase tracking-wider text-[9px] ${
+                                                                                    sub.submissionType === 'Proposal' ? 'bg-blue-100 text-blue-800' :
+                                                                                    sub.submissionType === 'Progress Report' ? 'bg-amber-100 text-amber-800' :
+                                                                                    'bg-purple-100 text-purple-800'
+                                                                                }`}>
+                                                                                    {sub.submissionType}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className="px-4 py-3 font-bold text-slate-700">v{sub.versionNumber}</td>
+                                                                            <td className="px-4 py-3 font-semibold text-slate-600 truncate max-w-[200px]" title={sub.originalName}>
+                                                                                {sub.originalName}
+                                                                            </td>
+                                                                            <td className="px-4 py-3 font-medium text-slate-500">
+                                                                                {sub.submittedBy?.name || 'Student'}
+                                                                            </td>
+                                                                            <td className="px-4 py-3 text-right">
+                                                                                <a 
+                                                                                    href={`${api.defaults.baseURL}/workspace/download/${sub.submissionID}?token=${localStorage.getItem('archive_access_token')}`}
+                                                                                    download
+                                                                                    className="inline-flex items-center gap-1 text-xs text-green-600 hover:text-green-800 font-bold hover:underline"
+                                                                                >
+                                                                                    <ArrowDownTrayIcon className="w-4.5 h-4.5" /> Download
+                                                                                </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    )}
+                                                </div>
+                            
+                                                {/* Feedback Stream Loop */}
+                                                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                                                    <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                                        <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-600" />
+                                                        Real-time Supervisor Feedback Loop
+                                                    </h2>
+                            
+                                                    {evaluations.length === 0 ? (
+                                                        <div className="bg-slate-50 rounded-2xl p-8 text-center text-slate-400 italic text-sm border border-slate-200">
+                                                            No feedback remarks received yet.
+                                                        </div>
+                                                    ) : (
+                                                        <div className="relative pl-6 border-l-2 border-slate-100 space-y-6">
+                                                            {evaluations.map((evalItem) => (
+                                                                <div key={evalItem.evaluationID} className="relative">
+                                                                    {/* Dot Indicator */}
+                                                                    <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-2 border-green-600 bg-white"></div>
+                                                                    
+                                                                    <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-200 space-y-3 hover:bg-slate-50 transition-colors">
+                                                                        <div className="flex items-center justify-between flex-wrap gap-2">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className="font-bold text-slate-800 text-sm">{evalItem.gradedBy}</span>
+                                                                                <span className="text-[10px] text-slate-400 font-semibold uppercase flex items-center gap-1">
+                                                                                    <CalendarIcon className="w-3.5 h-3.5" />
+                                                                                    {new Date(evalItem.createdAt).toLocaleDateString()}
+                                                                                </span>
+                                                                            </div>
+                                                                            {evalItem.marks !== null && (
+                                                                                <span className="bg-green-100 text-green-800 font-extrabold text-xs px-2.5 py-1 rounded-lg">
+                                                                                    Grade: {evalItem.marks}/100
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                                                            {evalItem.feedback}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                            
+                                        {/* One-Click Citation Exporter Modal */}
+                                        {showCitationModal && (
+                                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                                                <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 max-w-lg w-full space-y-6">
+                                                    <div className="flex items-center justify-between border-b pb-3">
+                                                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                                            <CpuChipIcon className="w-5 h-5 text-green-600" />
+                                                            One-Click Citation Generator
+                                                        </h3>
+                                                        <button onClick={() => setShowCitationModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">Close</button>
+                                                    </div>
+                            
+                                                    <div className="space-y-4">
+                                                        {['APA', 'IEEE', 'Harvard'].map((format) => {
+                                                            const citation = generateCitation(format);
+                                                            return (
+                                                                <div key={format} className="space-y-1.5">
+                                                                    <div className="flex justify-between items-center">
+                                                                        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">{format} Format</span>
+                                                                        <button 
+                                                                            onClick={() => copyToClipboard(citation)}
+                                                                            className="text-[10px] text-green-600 font-bold hover:underline"
+                                                                        >
+                                                                            Copy
+                                                                        </button>
+                                                                    </div>
+                                                                    <div className="p-3 bg-slate-50 border rounded-xl text-xs text-slate-600 font-medium select-all leading-normal">
+                                                                        {citation}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                            
+                    
+                    
+            
+            
 
     
 
