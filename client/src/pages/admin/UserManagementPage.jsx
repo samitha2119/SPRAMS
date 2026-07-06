@@ -94,7 +94,7 @@ function CreateUserForm({ onClose, onSuccess }) {
                     <option value="admin">System Admin</option>
                 </select>
                 <p className="text-xs text-slate-400 mt-1">
-                    {'{'}Student: read access | Lecturer: advanced access | Admin: full access{'}'}
+                    Student: read access | Lecturer: advanced access | Admin: full access
                 </p>
             </div>
 
@@ -108,11 +108,12 @@ function CreateUserForm({ onClose, onSuccess }) {
     );
 }
 
+/* ── Edit User Form ── */
 function UserForm({ onClose, onSuccess, initialData }) {
     const [loading, setLoading] = useState(false);
     const { register, handleSubmit, formState: { errors } } = useForm({
         defaultValues: initialData || {
-            role: 'student', isActive: true
+            role: 'student', isActive: true, approvalStatus: 'pending'
         }
     });
 
@@ -133,8 +134,8 @@ function UserForm({ onClose, onSuccess, initialData }) {
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
-                <p className="text-sm font-bold text-slate-800">{initialData.name}</p>
-                <p className="text-xs text-slate-500">{initialData.email}</p>
+                <p className="text-sm font-bold text-slate-800">{initialData?.name}</p>
+                <p className="text-xs text-slate-500">{initialData?.email}</p>
             </div>
 
             <div>
@@ -143,6 +144,15 @@ function UserForm({ onClose, onSuccess, initialData }) {
                     <option value="student">Student (Read-only)</option>
                     <option value="lecturer">Lecturer (Advanced Access)</option>
                     <option value="admin">System Admin (Full Access)</option>
+                </select>
+            </div>
+
+            <div>
+                <label className="label">Approval Status</label>
+                <select className="input-field" {...register('approvalStatus', { required: true })}>
+                    <option value="pending">Pending Approval</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
                 </select>
             </div>
 
@@ -173,7 +183,7 @@ export default function UserManagementPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
-    const [filters, setFilters] = useState({ role: '', isActive: '' });
+    const [filters, setFilters] = useState({ role: '', isActive: '', approvalStatus: '' });
     const [editUser, setEditUser] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
@@ -196,6 +206,26 @@ export default function UserManagementPage() {
         document.title = 'User Management | SPRAMS';
         fetchUsers(1);
     }, [fetchUsers]);
+
+    const handleApproveUser = async (userToApprove) => {
+        try {
+            await dashboardAPI.updateUser(userToApprove._id, { approvalStatus: 'approved' });
+            toast.success(`User "${userToApprove.name}" approved successfully and email sent`);
+            fetchUsers(pagination.page);
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to approve user');
+        }
+    };
+
+    const handleRejectUser = async (userToReject) => {
+        try {
+            await dashboardAPI.updateUser(userToReject._id, { approvalStatus: 'rejected' });
+            toast.success(`User "${userToReject.name}" rejected`);
+            fetchUsers(pagination.page);
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to reject user');
+        }
+    };
 
     const handleDelete = async () => {
         setDeleteLoading(true);
@@ -229,6 +259,7 @@ export default function UserManagementPage() {
                     Add New User
                 </button>
             </div>
+
             {/* Filters */}
             <div className="card py-4 flex flex-col sm:flex-row gap-3 items-center">
                 <FunnelIcon className="w-4 h-4 text-slate-400" />
@@ -251,7 +282,17 @@ export default function UserManagementPage() {
                     <option value="true">Active</option>
                     <option value="false">Inactive</option>
                 </select>
-                <button onClick={() => setFilters({ role: '', isActive: '' })} className="btn-ghost text-sm ml-auto">
+                <select
+                    value={filters.approvalStatus}
+                    onChange={(e) => setFilters(f => ({ ...f, approvalStatus: e.target.value }))}
+                    className="input-field py-1.5 text-sm w-full sm:w-40"
+                >
+                    <option value="">All Approvals</option>
+                    <option value="pending">Pending Approval</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                <button onClick={() => setFilters({ role: '', isActive: '', approvalStatus: '' })} className="btn-ghost text-sm ml-auto">
                     Clear Filters
                 </button>
             </div>
@@ -277,7 +318,7 @@ export default function UserManagementPage() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-9 h-9 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm">
-                                                    {user.name.charAt(0)}
+                                                    {user.name ? user.name.charAt(0) : '?'}
                                                 </div>
                                                 <div>
                                                     <p className="font-semibold text-slate-800 text-sm">{user.name}</p>
@@ -293,7 +334,15 @@ export default function UserManagementPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {user.isActive ? (
+                                            {user.approvalStatus === 'pending' ? (
+                                                <span className="flex items-center gap-1.5 text-amber-500 text-xs font-bold bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">
+                                                    <ShieldExclamationIcon className="w-4 h-4" /> Pending Approval
+                                                </span>
+                                            ) : user.approvalStatus === 'rejected' ? (
+                                                <span className="flex items-center gap-1.5 text-red-500 text-xs font-bold bg-red-50 px-2 py-0.5 rounded-lg border border-red-200">
+                                                    <XCircleIcon className="w-4 h-4" /> Rejected
+                                                </span>
+                                            ) : user.isActive ? (
                                                 <span className="flex items-center gap-1.5 text-green-600 text-xs font-bold">
                                                     <CheckCircleIcon className="w-4 h-4" /> Active
                                                 </span>
@@ -308,6 +357,24 @@ export default function UserManagementPage() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                {user.approvalStatus === 'pending' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleApproveUser(user)}
+                                                            className="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all"
+                                                            title="Approve User"
+                                                        >
+                                                            <CheckCircleIcon className="w-5 h-5" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRejectUser(user)}
+                                                            className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                                                            title="Reject User"
+                                                        >
+                                                            <XCircleIcon className="w-5 h-5" />
+                                                        </button>
+                                                    </>
+                                                )}
                                                 <button
                                                     onClick={() => setEditUser(user)}
                                                     className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all"
@@ -339,21 +406,22 @@ export default function UserManagementPage() {
                     </div>
                 </div>
             )}
-                {/* Modal for editing user */}
-                        <Modal
-                            isOpen={!!editUser}
-                            onClose={() => setEditUser(null)}
-                            title="Manage User Access"
-                            size="md"
-                        >
-                            {editUser && (
-                                <UserForm
-                                    initialData={editUser}
-                                    onClose={() => setEditUser(null)}
-                                    onSuccess={() => fetchUsers(pagination.page)}
-                                />
-                            )}
-                        </Modal>
+
+            {/* Modal for editing user */}
+            <Modal
+                isOpen={!!editUser}
+                onClose={() => setEditUser(null)}
+                title="Manage User Access"
+                size="md"
+            >
+                {editUser && (
+                    <UserForm
+                        initialData={editUser}
+                        onClose={() => setEditUser(null)}
+                        onSuccess={() => fetchUsers(pagination.page)}
+                    />
+                )}
+            </Modal>
 
             {/* Create User Modal */}
             <Modal
@@ -367,3 +435,16 @@ export default function UserManagementPage() {
                     onSuccess={() => fetchUsers(1)}
                 />
             </Modal>
+
+            {/* Delete confirmation */}
+            <ConfirmDialog
+                isOpen={!!deleteConfirm}
+                onClose={() => setDeleteConfirm(null)}
+                onConfirm={handleDelete}
+                loading={deleteLoading}
+                title="Delete User Account"
+                message={`Are you sure you want to permanently delete ${deleteConfirm?.name}'s account? This will remove all their associations and cannot be undone.`}
+            />
+        </div>
+    );
+}

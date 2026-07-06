@@ -1,0 +1,116 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+
+3 0 obj
+<< /Type /Page /Parent 2 0 R
+   /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >>
+   /MediaBox [0 0 595 842]
+   /Contents 4 0 R >>
+endobj
+
+4 0 obj
+<< /Length 1824 >>
+stream
+BT
+/F1 16 Tf
+72 780 Td
+(UNIVERSITY OF VAVUNIYA) Tj
+/F1 12 Tf
+0 -20 Td
+(Faculty of Applied Science & Technology) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+/F1 14 Tf
+(THESIS & PROJECT BOOK FORMATTING GUIDELINES) Tj
+/F1 11 Tf
+0 -18 Td
+(Category: Guidelines) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(─────────────────────────────────────────────────────────) Tj
+0 -16 Td
+(PAGE LAYOUT) Tj
+0 -16 Td
+(  Paper Size: A4 \(210 x 297 mm\)) Tj
+0 -16 Td
+(  Margins: Top 25mm, Bottom 25mm) Tj
+0 -16 Td
+(          Left 35mm, Right 20mm) Tj
+0 -16 Td
+(  Line Spacing: 1.5 lines) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(TYPOGRAPHY) Tj
+0 -16 Td
+(  Body Font: Times New Roman, 12pt) Tj
+0 -16 Td
+(  Chapter Headings: Arial Bold, 16pt) Tj
+0 -16 Td
+(  Section Headings: Arial Bold, 14pt) Tj
+0 -16 Td
+(  Sub-section: Arial Bold, 12pt) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(PAGINATION) Tj
+0 -16 Td
+(  Preliminary pages: lowercase Roman \(i, ii, iii\)) Tj
+0 -16 Td
+(  Main text: Arabic numerals \(1, 2, 3...\)) Tj
+0 -16 Td
+(  Footer: centered, bottom of page) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(CITATIONS) Tj
+0 -16 Td
+(  Style: IEEE \(for Engineering/IT/CS\)) Tj
+0 -16 Td
+(  Style: APA 7th Ed \(for Social Science\)) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(BINDING) Tj
+0 -16 Td
+(  Colour: Dark Blue hard cover) Tj
+0 -16 Td
+(  Spine: Title, Author, Year) Tj
+0 -16 Td
+(  Copies: 3 \(Dept + Library + Student\)) Tj
+0 -16 Td
+() Tj
+0 -16 Td
+(─────────────────────────────────────────────────────────) Tj
+0 -16 Td
+(SPRAMS — Student Project and Research Archive System) Tj
+0 -16 Td
+(Academic Year 2025/2026) Tj
+0 -16 Td
+(Please fill out all fields and submit via the SPRAMS Portal) Tj
+0 -16 Td
+ET
+endstream
+endobj
+
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000266 00000 n 
+
+trailer
+<< /Size 5 /Root 1 0 R >>
+startxref
+400
+%%EOF

@@ -1,0 +1,28 @@
+# Dependency directories
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Build outputs
+client/dist/
+
+# Environment variables
+.env
+server/.env
+
+# Log files
+*.log
+client/*.log
+server/*.log
+server/logs/
+server/err.txt
+server/server_output.log
+
+# Database data
+db_data/
+
+# OS/IDE files
+.DS_Store
+.vscode/
+.idea/
+.agent/

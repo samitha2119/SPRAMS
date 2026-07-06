@@ -36,6 +36,14 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        approvalStatus: {
+            type: String,
+            enum: {
+                values: ['pending', 'approved', 'rejected'],
+                message: 'Approval status must be pending, approved, or rejected',
+            },
+            default: 'pending',
+        },
         refreshToken: {
             type: String,
             select: false,
@@ -49,7 +57,7 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-// Hash password before saving (Runs on .save() and .create())
+// Hash password before saving
 userSchema.pre('save', async function (next) {
     if (!this.isModified('passwordHash')) return next();
     const salt = await bcrypt.genSalt(12);

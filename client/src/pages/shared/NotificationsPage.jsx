@@ -5,8 +5,7 @@ import toast from 'react-hot-toast';
 import { formatDistanceToNow } from 'date-fns';
 import {
     BellIcon, CheckIcon, TrashIcon,
-    CheckCircleIcon, DocumentTextIcon,
-    InboxIcon,
+    CheckCircleIcon, InboxIcon,
 } from '@heroicons/react/24/outline';
 
 const typeIcons = {
@@ -18,6 +17,7 @@ const typeIcons = {
     SYSTEM_ANNOUNCEMENT: '📢',
     RECORD_ADDED: '📝',
     USER_ACTION: '👤',
+    APPROVAL_REQUEST: '🔔',
 };
 
 export default function NotificationsPage() {
@@ -142,7 +142,7 @@ export default function NotificationsPage() {
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
                                     <h3 className={`text-sm ${!n.isRead ? 'font-bold text-slate-800' : 'font-medium text-slate-700'} truncate`}>
-                                        {n.title}
+                                        ={n.title}
                                     </h3>
                                     {!n.isRead && (
                                         <span className="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0" />
