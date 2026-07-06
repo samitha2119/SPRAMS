@@ -61,13 +61,21 @@ userSchema.pre('save', async function (next) {
 userSchema.pre('findOneAndUpdate', async function (next) {
     const update = this.getUpdate();
     
-    // Check if passwordHash is being modified in this update payload
-    if (update && update.passwordHash) {
-        try {
-            const salt = await bcrypt.genSalt(12);
-            update.passwordHash = await bcrypt.hash(update.passwordHash, salt);
-        } catch (err) {
-            return next(err);
+    if (update) {
+        // Fallback checks to intercept password change if wrapped in a $set block or passed directly
+        const password = update.passwordHash || (update.$set && update.$set.passwordHash);
+        
+        if (password) {
+            try {
+                const salt = await bcrypt.genSalt(12);
+                const hashed = await bcrypt.hash(password, salt);
+                
+                // Re-assign hash back to its respective location
+                if (update.passwordHash) update.passwordHash = hashed;
+                if (update.$set && update.$set.passwordHash) update.$set.passwordHash = hashed;
+            } catch (err) {
+                return next(err);
+            }
         }
     }
     next();
