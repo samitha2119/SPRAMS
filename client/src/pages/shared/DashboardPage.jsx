@@ -81,7 +81,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Research Statistics Section (New) */}
+            {/* Research Statistics Section */}
             {!isAdmin && stats && stats.researchStats && (
                 <div className="space-y-6 animate-slide-up">
                     <div className="flex items-center gap-3">
@@ -269,7 +269,6 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* Primary Actions for all */}
                     <Link to="/projects" className="group p-6 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-primary-200 transition-all">
                         <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-600 group-hover:text-white transition-colors">
                             <FolderOpenIcon className="w-6 h-6 text-primary-600 group-hover:text-white" />

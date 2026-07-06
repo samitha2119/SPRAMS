@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { PageSpinner, ErrorAlert } from '../../components/ui/Common';
+import { PageSpinner, ErrorAlert, EmptyState } from '../../components/ui/Common';
 import toast from 'react-hot-toast';
 import {
     AcademicCapIcon,
@@ -76,7 +76,7 @@ export default function StudentWorkspace() {
     // Fetch lists
     const fetchLists = async () => {
         try {
-            setListLoading(true);
+            setProjectLoading(true);
             const [projRes, resRes] = await Promise.all([
                 api.get('/projects', { params: { createdBy: user._id } }),
                 api.get('/student-research', { params: { submittedBy: user._id } })
@@ -281,13 +281,12 @@ export default function StudentWorkspace() {
     if (loading) return <PageSpinner />;
     if (error) return <div className="max-w-6xl mx-auto p-6"><ErrorAlert message={error} /></div>;
 
-    // --- RENDER DETAIL VIEW (DASHBOARD) ---
+    // --- RENDER DETAIL VIEW (DASHBOARD WORKSPACE DETAIL) ---
     if (selectedItem) {
         const item = selectedItem.item;
         const type = selectedItem.type;
         const isWorkspace = type === 'workspace';
         
-        // Status steps mapping
         const statusSteps = ['Proposed', 'Approved', 'Ongoing', 'Completed'];
         const currentStepIndex = statusSteps.indexOf(item.status) === -1 ? 0 : statusSteps.indexOf(item.status);
 
@@ -375,7 +374,7 @@ export default function StudentWorkspace() {
                                 );
                             })
                         ) : type === 'project' ? (
-                            (item.members || []).map((m, index) => (
+                            (item.members || []).map((m) => (
                                 <div key={m.regNo} className="bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 transition-colors">
                                     <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-slate-200 text-slate-700">
                                         {m.name.charAt(0)}
@@ -438,7 +437,7 @@ export default function StudentWorkspace() {
 
                 {/* Split Workspace Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column (Upload for Active workspace, or static abstract/keywords for other items) */}
+                    {/* Left Column Form / Details summary */}
                     <div className="lg:col-span-1 space-y-6">
                         {isWorkspace ? (
                             <>
@@ -547,7 +546,7 @@ export default function StudentWorkspace() {
 
                     {/* Right Column (Submissions and Evaluations Feedback Loop) */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Submissions list */}
+                        {/* Submissions version tracker layout grid */}
                         <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
                             <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                                 <DocumentTextIcon className="w-5 h-5 text-green-600" />
@@ -602,7 +601,7 @@ export default function StudentWorkspace() {
                             )}
                         </div>
 
-                        {/* Feedback Timeline */}
+                        {/* Real-time feedback timeline element */}
                         <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
                             <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                                 <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-600" />
@@ -697,7 +696,7 @@ export default function StudentWorkspace() {
                 <p className="text-sm text-slate-500">Stay updated and track your projects and research papers.</p>
             </div>
 
-            {/* Tabs Bar */}
+            {/* Tabs Bar Selector */}
             <div className="flex border-b border-slate-200">
                 <button
                     onClick={() => setActiveTab('projects')}
@@ -728,7 +727,7 @@ export default function StudentWorkspace() {
                     {/* PROJECTS TAB CONTENT */}
                     {activeTab === 'projects' && (
                         <div className="space-y-6">
-                            {/* 1. Active Workspace Project (fetched from workspace) */}
+                            {/* 1. Active Workspace Project */}
                             {data.project && (
                                 <div className="space-y-2">
                                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Workspace Project</h3>
@@ -762,7 +761,7 @@ export default function StudentWorkspace() {
                                 </div>
                             )}
 
-                            {/* 2. Archived / All other projects */}
+                            {/* 2. Archived / Previous Historical Projects */}
                             <div className="space-y-3 pt-2">
                                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">All Projects</h3>
                                 {projectsList.length === 0 && !data.project ? (

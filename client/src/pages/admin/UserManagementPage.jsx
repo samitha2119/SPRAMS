@@ -94,7 +94,7 @@ function CreateUserForm({ onClose, onSuccess }) {
                     <option value="admin">System Admin</option>
                 </select>
                 <p className="text-xs text-slate-400 mt-1">
-                    {'{'}Student: read access | Lecturer: advanced access | Admin: full access{'}'}
+                    Student: read access | Lecturer: advanced access | Admin: full access
                 </p>
             </div>
 
@@ -113,7 +113,7 @@ function UserForm({ onClose, onSuccess, initialData }) {
     const [loading, setLoading] = useState(false);
     const { register, handleSubmit, formState: { errors } } = useForm({
         defaultValues: initialData || {
-            role: 'student', isActive: true
+            role: 'student', isActive: true, approvalStatus: 'pending'
         }
     });
 
@@ -134,8 +134,8 @@ function UserForm({ onClose, onSuccess, initialData }) {
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
-                <p className="text-sm font-bold text-slate-800">{initialData.name}</p>
-                <p className="text-xs text-slate-500">{initialData.email}</p>
+                <p className="text-sm font-bold text-slate-800">{initialData?.name}</p>
+                <p className="text-xs text-slate-500">{initialData?.email}</p>
             </div>
 
             <div>
@@ -283,7 +283,7 @@ export default function UserManagementPage() {
                     <option value="false">Inactive</option>
                 </select>
                 <select
-                    value={filters.approvalStatus || ''}
+                    value={filters.approvalStatus}
                     onChange={(e) => setFilters(f => ({ ...f, approvalStatus: e.target.value }))}
                     className="input-field py-1.5 text-sm w-full sm:w-40"
                 >
@@ -318,7 +318,7 @@ export default function UserManagementPage() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-9 h-9 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm">
-                                                    {user.name.charAt(0)}
+                                                    {user.name ? user.name.charAt(0) : '?'}
                                                 </div>
                                                 <div>
                                                     <p className="font-semibold text-slate-800 text-sm">{user.name}</p>

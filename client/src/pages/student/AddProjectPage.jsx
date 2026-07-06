@@ -35,8 +35,10 @@ export default function AddProjectPage() {
             formData.append('groupName', data.groupName);
             formData.append('supervisor', data.supervisor);
             formData.append('abstract', data.abstract);
+            
             const cleanedMembers = (data.members || []).filter(m => m.name.trim() && m.regNo.trim());
             formData.append('members', JSON.stringify(cleanedMembers));
+            
             if (!proposalFile) {
                 toast.error('Project proposal PDF is required for submission');
                 setLoading(false);
@@ -267,7 +269,7 @@ export default function AddProjectPage() {
                     </div>
                 </div>
 
-                {/* Submit */}
+                {/* Submit Buttons */}
                 <div className="flex gap-3 pt-4 border-t border-slate-100">
                     <button type="button" onClick={() => navigate('/projects')} className="btn-secondary flex-1">
                         Cancel
