@@ -1,57 +1,37 @@
-const createEvaluation = async (req, res, next) => {
+const updateEvaluation = async (req, res, next) => {
     try {
+        const evaluation = await Evaluation.findById(req.params.id);
+
+        if (!evaluation) {
+            return res.status(404).json({
+                success: false,
+                message: 'Evaluation not found',
+            });
+        }
+
         const {
-            submissionId,
-            submissionType,
             approvalStatus,
             marks,
             grade,
             feedback,
         } = req.body;
 
-        // Verify submission
-        let submission;
+        if (approvalStatus) evaluation.approvalStatus = approvalStatus;
+        if (marks !== undefined) evaluation.marks = marks;
+        if (grade) evaluation.grade = grade;
+        if (feedback !== undefined) evaluation.feedback = feedback;
 
-        if (submissionType === 'Project') {
-            submission = await Project.findById(submissionId);
-        } else if (submissionType === 'StudentResearch') {
-            submission = await StudentResearch.findById(submissionId);
-        }
+        evaluation.evaluationDate = new Date();
 
-        const evaluation = await Evaluation.create({
-            submissionId,
-            submissionType,
-            evaluatedBy: req.user._id,
-            approvalStatus: approvalStatus || 'Pending',
-            marks: marks ?? null,
-            grade: grade || 'N/A',
-            feedback: feedback || '',
-        });
-
-        await Notification.create({
-            recipientId:
-                submissionType === 'Project'
-                    ? submission.createdBy
-                    : submission.submittedBy,
-            senderId: req.user._id,
-            type: 'EVALUATION_RECEIVED',
-            title: 'New Evaluation',
-            message: `Your ${
-                submissionType === 'Project'
-                    ? 'project'
-                    : 'research'
-            } "${submission.title}" has been evaluated.`,
-            relatedId: evaluation._id,
-            relatedModel: 'Evaluation',
-        });
+        await evaluation.save();
 
         await ActivityLog.create({
             userId: req.user._id,
-            action: 'EVALUATION_CREATED',
-            target: `${submissionType}: ${submission.title}`,
+            action: 'EVALUATION_UPDATED',
+            target: `Evaluation: ${evaluation._id}`,
         });
 
-        res.status(201).json({
+        res.json({
             success: true,
             data: { evaluation },
         });
