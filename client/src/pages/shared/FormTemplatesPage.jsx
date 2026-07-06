@@ -28,7 +28,6 @@ const formatSize = (bytes) => {
     return `${(bytes / 1048576).toFixed(1)} MB`;
 };
 
-// Sub-component: Preview Modal
 function PreviewModal({ template, onClose, onDownload }) {
     const token = tokenStorage.getAccess();
     const previewUrl = `${formTemplatesAPI.getDownloadUrl(template._id)}?token=${token}&disposition=inline`;
@@ -61,7 +60,6 @@ function PreviewModal({ template, onClose, onDownload }) {
     );
 }
 
-// Sub-component: Template Display Card
 function TemplateCard({ template, isAdmin, onEdit, onDelete, onDownload, onPreview }) {
     const style = getCategoryStyle(template.category);
 
@@ -83,6 +81,14 @@ function TemplateCard({ template, isAdmin, onEdit, onDelete, onDownload, onPrevi
                 <span className="font-medium">{template.originalName}</span>
                 <span>·</span>
                 <span>{formatSize(template.fileSize)}</span>
+                {template.downloadCount > 0 && (
+                    <>
+                        <span>·</span>
+                        <span className="flex items-center gap-0.5">
+                            <ArrowDownTrayIcon className="w-3 h-3" /> {template.downloadCount}
+                        </span>
+                    </>
+                )}
             </div>
             <div className="flex gap-2 mt-auto">
                 <button onClick={() => onPreview(template)} className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:text-primary-600 hover:border-primary-300 hover:bg-primary-50 transition-all flex-1">
@@ -91,6 +97,16 @@ function TemplateCard({ template, isAdmin, onEdit, onDelete, onDownload, onPrevi
                 <button onClick={() => onDownload(template)} className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-all flex-1 shadow-sm">
                     <ArrowDownTrayIcon className="w-4 h-4" /> Download
                 </button>
+                {isAdmin && (
+                    <>
+                        <button onClick={() => onEdit(template)} className="p-2 rounded-xl bg-white border border-slate-200 text-blue-500 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                            <PencilSquareIcon className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => onDelete(template._id)} className="p-2 rounded-xl bg-white border border-slate-200 text-red-400 hover:bg-red-50 hover:border-red-200 transition-colors">
+                            <TrashIcon className="w-4 h-4" />
+                        </button>
+                    </>
+                )}
             </div>
         </div>
     );
@@ -100,13 +116,52 @@ export default function FormTemplatesPage() {
     const { isAdmin } = useAuth();
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [categoryFilter, setCategoryFilter] = useState('');
+    const [previewTemplate, setPreviewTemplate] = useState(null);
+
+    const loadTemplates = useCallback(async () => {
+        try {
+            setLoading(true);
+            const params = {};
+            if (categoryFilter) params.category = categoryFilter;
+            const { data } = await formTemplatesAPI.getAll(params);
+            setTemplates(data.data.templates);
+        } catch {
+            toast.error('Failed to load templates');
+        } finally {
+            setLoading(false);
+        }
+    }, [categoryFilter]);
 
     useEffect(() => {
         document.title = 'Form Templates | SPRAMS';
-        setLoading(false);
-    }, []);
+        loadTemplates();
+    }, [loadTemplates]);
 
-    if (loading) return <PageSpinner />;
+    const handleDownload = (template) => {
+        const token = tokenStorage.getAccess();
+        const url = formTemplatesAPI.getDownloadUrl(template._id);
+        fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+            .then((res) => {
+                if (!res.ok) throw new Error('Download failed');
+                return res.blob();
+            })
+            .then((blob) => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = template.originalName || `${template.name}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                toast.success(`"${template.name}" downloaded!`);
+            })
+            .catch(() => toast.error('Download failed. Please try again.'));
+    };
+
+    const categories = [...new Set(templates.map((t) => t.category).filter(Boolean))];
+    const filteredTemplates = categoryFilter ? templates.filter((t) => t.category === categoryFilter) : templates;
+
+    if (loading && templates.length === 0) return <PageSpinner />;
 
     return (
         <div className="space-y-6 fade-in">
@@ -120,7 +175,63 @@ export default function FormTemplatesPage() {
                     </p>
                 </div>
             </div>
-            <EmptyState icon={DocumentIcon} title="No Templates" message="No form templates are available yet." />
+
+            {templates.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="bg-gradient-to-br from-primary-50 to-white border border-primary-100 rounded-xl p-4 text-center">
+                        <p className="text-2xl font-extrabold text-primary-700">{templates.length}</p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">Templates Available</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-xl p-4 text-center">
+                        <p className="text-2xl font-extrabold text-emerald-700">{categories.length}</p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">Categories</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl p-4 text-center">
+                        <p className="text-2xl font-extrabold text-blue-700">{templates.reduce((sum, t) => sum + (t.downloadCount || 0), 0)}</p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">Total Downloads</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-50 to-white border border-purple-100 rounded-xl p-4 text-center">
+                        <p className="text-2xl font-extrabold text-purple-700">PDF</p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">Format</p>
+                    </div>
+                </div>
+            )}
+
+            {categories.length > 1 && (
+                <div className="flex gap-2 flex-wrap">
+                    <button onClick={() => setCategoryFilter('')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${!categoryFilter ? 'bg-primary-600 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                        All ({templates.length})
+                    </button>
+                    {categories.map((cat) => {
+                        const style = getCategoryStyle(cat);
+                        return (
+                            <button key={cat} onClick={() => setCategoryFilter(cat)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${categoryFilter === cat ? `${style.badge} shadow-sm` : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                                {cat} ({templates.filter((t) => t.category === cat).length})
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+
+            {filteredTemplates.length === 0 ? (
+                <EmptyState icon={DocumentIcon} title="No Templates" message={isAdmin ? 'Upload your first form template above.' : 'No form templates are available yet.'} />
+            ) : (
+                <>
+                    {!isAdmin && (
+                        <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200 text-sm text-blue-800">
+                            <CheckBadgeIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                            <p>Click <strong>Preview</strong> to view a template in your browser, or <strong>Download</strong> to save it to your device.</p>
+                        </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {filteredTemplates.map((t) => (
+                            <TemplateCard key={t._id} template={t} isAdmin={isAdmin} onEdit={() => {}} onDelete={() => {}} onDownload={handleDownload} onPreview={setPreviewTemplate} />
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {previewTemplate && <PreviewModal template={previewTemplate} onClose={() => setPreviewTemplate(null)} onDownload={handleDownload} />}
         </div>
     );
 }
