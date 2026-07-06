@@ -3,7 +3,11 @@ import { useAuth } from '../../context/AuthContext';
 import { lecturerResearchAPI } from '../../services/api';
 import { PageSpinner, EmptyState } from '../../components/ui/Common';
 import toast from 'react-hot-toast';
-import { PlusIcon, DocumentTextIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import {
+    PlusIcon, DocumentTextIcon, PencilSquareIcon,
+    TrashIcon, ChevronDownIcon, ChevronUpIcon,
+    BookOpenIcon, LinkIcon,
+} from '@heroicons/react/24/outline';
 
 const INITIAL_FORM = {
     title: '', abstract: '', department: '', year: new Date().getFullYear(),
@@ -20,6 +24,7 @@ export default function LecturerResearchPage() {
     const [form, setForm] = useState(INITIAL_FORM);
     const [files, setFiles] = useState([]);
     const [submitting, setSubmitting] = useState(false);
+    const [expandedId, setExpandedId] = useState(null);
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState({});
 
@@ -112,6 +117,24 @@ export default function LecturerResearchPage() {
         }
     };
 
+    const handleDelete = async (id) => {
+        if (!window.confirm('Delete this research entry?')) return;
+        try {
+            await lecturerResearchAPI.delete(id);
+            toast.success('Research deleted');
+            loadEntries();
+        } catch {
+            toast.error('Failed to delete');
+        }
+    };
+
+    const statusColors = {
+        Draft: 'badge-yellow',
+        Submitted: 'badge-blue',
+        Published: 'badge-green',
+        Archived: 'badge-red',
+    };
+
     if (loading && entries.length === 0) return <PageSpinner />;
 
     return (
@@ -198,7 +221,6 @@ export default function LecturerResearchPage() {
                         </div>
                     </div>
 
-                    {/* Publication details */}
                     <div className="border-t pt-4 mt-2">
                         <h3 className="font-medium text-slate-600 mb-3 text-sm">Publication Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -275,7 +297,6 @@ export default function LecturerResearchPage() {
                         </div>
                     </div>
 
-                    {/* Files */}
                     <div>
                         <label className="form-label">Attach Files</label>
                         <input
@@ -299,12 +320,89 @@ export default function LecturerResearchPage() {
                 </form>
             )}
 
-            {entries.length === 0 && !loading && (
+            {/* Entries list */}
+            {entries.length === 0 && !loading ? (
                 <EmptyState
                     icon={DocumentTextIcon}
                     title="No Research Entries"
-                    message="You haven't added any research publications yet."
+                    message="You haven't added any research publications yet. Click 'Add Research' to get started."
                 />
+            ) : (
+                <div className="space-y-3">
+                    {entries.map((entry) => (
+                        <div key={entry._id} className="card hover:shadow-md transition-shadow">
+                            <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
+                                    <BookOpenIcon className="w-5 h-5 text-primary-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                                        <h3 className="font-semibold text-slate-800 text-sm truncate">{entry.title}</h3>
+                                        <span className={`badge ${statusColors[entry.status] || 'badge-blue'}`}>
+                                            {entry.status}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mb-2">
+                                        {entry.department} · {entry.year}
+                                        {entry.journalName && ` · ${entry.journalName}`}
+                                    </p>
+
+                                    {expandedId === entry._id && (
+                                        <div className="mt-3 space-y-2 text-sm text-slate-600 border-t pt-3">
+                                            <p><strong>Abstract:</strong> {entry.abstract}</p>
+                                            {entry.keywords?.length > 0 && (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {entry.keywords.map((kw, i) => (
+                                                        <span key={i} className="badge badge-blue text-xs">{kw}</span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {entry.coAuthors?.length > 0 && (
+                                                <p><strong>Co-Authors:</strong> {entry.coAuthors.join(', ')}</p>
+                                            )}
+                                            {entry.doi && (
+                                                <p className="flex items-center gap-1">
+                                                    <LinkIcon className="w-3 h-3" />
+                                                    <strong>DOI:</strong> {entry.doi}
+                                                </p>
+                                            )}
+                                            {entry.files?.length > 0 && (
+                                                <p><strong>Files:</strong> {entry.files.length} attached</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-1 flex-shrink-0">
+                                    <button
+                                        onClick={() => setExpandedId(expandedId === entry._id ? null : entry._id)}
+                                        className="p-2 rounded-lg hover:bg-slate-100 text-slate-400"
+                                        title={expandedId === entry._id ? 'Collapse' : 'Expand'}
+                                    >
+                                        {expandedId === entry._id ?
+                                            <ChevronUpIcon className="w-4 h-4" /> :
+                                            <ChevronDownIcon className="w-4 h-4" />
+                                        }
+                                    </button>
+                                    <button
+                                        onClick={() => handleEdit(entry)}
+                                        className="p-2 rounded-lg hover:bg-blue-50 text-blue-500"
+                                        title="Edit"
+                                    >
+                                        <PencilSquareIcon className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(entry._id)}
+                                        className="p-2 rounded-lg hover:bg-red-50 text-red-500"
+                                        title="Delete"
+                                    >
+                                        <TrashIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             )}
         </div>
     );
