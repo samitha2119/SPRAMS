@@ -339,3 +339,19 @@ export default function UserManagementPage() {
                     </div>
                 </div>
             )}
+                {/* Modal for editing user */}
+                        <Modal
+                            isOpen={!!editUser}
+                            onClose={() => setEditUser(null)}
+                            title="Manage User Access"
+                            size="md"
+                        >
+                            {editUser && (
+                                <UserForm
+                                    initialData={editUser}
+                                    onClose={() => setEditUser(null)}
+                                    onSuccess={() => fetchUsers(pagination.page)}
+                                />
+                            )}
+                        </Modal>
+            
