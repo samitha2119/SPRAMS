@@ -424,8 +424,48 @@ export default function StudentWorkspace() {
                                             </div>
                                         )}
                                     </div>
-                                );
-                            }
+                                     {/* One-Click Citation Exporter Modal */}
+                                                {showCitationModal && (
+                                                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                                                        <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 max-w-lg w-full space-y-6">
+                                                            <div className="flex items-center justify-between border-b pb-3">
+                                                                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                                                    <CpuChipIcon className="w-5 h-5 text-green-600" />
+                                                                    One-Click Citation Generator
+                                                                </h3>
+                                                                <button onClick={() => setShowCitationModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">Close</button>
+                                                            </div>
+                                    
+                                                            <div className="space-y-4">
+                                                                {['APA', 'IEEE', 'Harvard'].map((format) => {
+                                                                    const citation = generateCitation(format);
+                                                                    return (
+                                                                        <div key={format} className="space-y-1.5">
+                                                                            <div className="flex justify-between items-center">
+                                                                                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">{format} Format</span>
+                                                                                <button 
+                                                                                    onClick={() => copyToClipboard(citation)}
+                                                                                    className="text-[10px] text-green-600 font-bold hover:underline"
+                                                                                >
+                                                                                    Copy
+                                                                                </button>
+                                                                            </div>
+                                                                            <div className="p-3 bg-slate-50 border rounded-xl text-xs text-slate-600 font-medium select-all leading-normal">
+                                                                                {citation}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    }
+                                    
+                        
+                            
                             
                     
                     
