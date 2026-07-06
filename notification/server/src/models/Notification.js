@@ -1,23 +1,9 @@
-link: {
-    type: String,
-    trim: true,
-    default: null,
+isRead: {
+    type: Boolean,
+    default: false,
 },
 
-relatedId: {
-    type: mongoose.Schema.Types.ObjectId,
-    default: null,
-},
-
-relatedModel: {
-    type: String,
-    enum: [
-        'Project',
-        'StudentResearch',
-        'LecturerResearch',
-        'Evaluation',
-        'FormTemplate',
-        null,
-    ],
+readAt: {
+    type: Date,
     default: null,
 },
