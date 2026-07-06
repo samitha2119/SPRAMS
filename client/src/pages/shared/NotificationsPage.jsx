@@ -49,6 +49,39 @@ export default function NotificationsPage() {
         loadNotifications();
     }, [loadNotifications]);
 
+    const handleMarkRead = async (id) => {
+        try {
+            await notificationsAPI.markAsRead(id);
+            setNotifications((prev) =>
+                prev.map((n) => n._id === id ? { ...n, isRead: true, readAt: new Date() } : n)
+            );
+            setUnreadCount((c) => Math.max(0, c - 1));
+        } catch {
+            toast.error('Failed to mark as read');
+        }
+    };
+
+    const handleMarkAllRead = async () => {
+        try {
+            await notificationsAPI.markAllAsRead();
+            setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true, readAt: new Date() })));
+            setUnreadCount(0);
+            toast.success('All notifications marked as read');
+        } catch {
+            toast.error('Failed to mark all as read');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            await notificationsAPI.delete(id);
+            setNotifications((prev) => prev.filter((n) => n._id !== id));
+            toast.success('Notification deleted');
+        } catch {
+            toast.error('Failed to delete');
+        }
+    };
+
     if (loading && notifications.length === 0) return <PageSpinner />;
 
     return (
