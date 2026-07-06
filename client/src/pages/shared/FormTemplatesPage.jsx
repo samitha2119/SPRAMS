@@ -34,7 +34,10 @@ function PreviewModal({ template, onClose, onDownload }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-slate-900/90 backdrop-blur-sm">
-            <div className="relative bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ width: '96vw', height: '96vh' }}>
+            <div
+                className="relative bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                style={{ width: '96vw', height: '96vh' }}
+            >
                 {/* Modal Header */}
                 <div className="flex-shrink-0 px-5 py-3 border-b border-slate-100 flex items-center justify-between bg-white">
                     <div className="flex items-center gap-3 min-w-0">
@@ -274,6 +277,7 @@ export default function FormTemplatesPage() {
             .catch(() => toast.error('Download failed. Please try again.'));
     };
 
+    // Group categories for filter pills
     const categories = [...new Set(templates.map((t) => t.category).filter(Boolean))];
     const filteredTemplates = categoryFilter
         ? templates.filter((t) => t.category === categoryFilter)
