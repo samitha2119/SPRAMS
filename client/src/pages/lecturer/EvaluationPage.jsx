@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { evaluationsAPI, studentResearchAPI, projectsAPI } from '../../services/api';
+import { evaluationsAPI, studentResearchAPI } from '../../services/api';
+import { projectsAPI } from '../../services/api';
 import { PageSpinner, EmptyState } from '../../components/ui/Common';
 import toast from 'react-hot-toast';
 import {
@@ -13,7 +14,7 @@ export default function EvaluationPage() {
     const [submissions, setSubmissions] = useState([]);
     const [evaluations, setEvaluations] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState('projects');
+    const [tab, setTab] = useState('projects'); // 'projects' or 'research'
     const [evaluatingId, setEvaluatingId] = useState(null);
     const [evalForm, setEvalForm] = useState({
         approvalStatus: 'Pending', marks: '', grade: 'N/A', feedback: '',
@@ -36,7 +37,7 @@ export default function EvaluationPage() {
             }));
             setSubmissions([...projects, ...research]);
             setEvaluations(evalsRes.data.data.evaluations || []);
-        } catch (err) {
+        } catch {
             toast.error('Failed to load data');
         } finally {
             setLoading(false);
@@ -67,7 +68,7 @@ export default function EvaluationPage() {
                 submissionId: evaluatingId,
                 submissionType: sub._submissionType,
                 approvalStatus: evalForm.approvalStatus,
-                marks: evalForm.marks ? parseInt(evalForm.marks, 10) : null,
+                marks: evalForm.marks ? parseInt(evalForm.marks) : null,
                 grade: evalForm.grade,
                 feedback: evalForm.feedback,
             };
@@ -123,6 +124,7 @@ export default function EvaluationPage() {
                 <p className="text-slate-500 mt-1">Review and grade student submissions</p>
             </div>
 
+            {/* Tabs */}
             <div className="flex gap-2">
                 <button
                     onClick={() => setTab('projects')}
@@ -138,6 +140,7 @@ export default function EvaluationPage() {
                 </button>
             </div>
 
+            {/* Submissions table */}
             {filtered.length === 0 ? (
                 <EmptyState
                     icon={DocumentTextIcon}
@@ -196,6 +199,7 @@ export default function EvaluationPage() {
                                             </td>
                                         </tr>
 
+                                        {/* Inline evaluation form */}
                                         {evaluatingId === sub._id && (
                                             <tr>
                                                 <td colSpan={6} className="p-4 bg-slate-50">
