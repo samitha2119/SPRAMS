@@ -354,4 +354,16 @@ export default function UserManagementPage() {
                                 />
                             )}
                         </Modal>
-            
+
+            {/* Create User Modal */}
+            <Modal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                title="Create New User"
+                size="md"
+            >
+                <CreateUserForm
+                    onClose={() => setShowCreateModal(false)}
+                    onSuccess={() => fetchUsers(1)}
+                />
+            </Modal>
