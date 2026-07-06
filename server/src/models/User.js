@@ -8,7 +8,7 @@ email: {
         },
         passwordHash: {
             type: String,
-            required: [true, 'Password is required'],
+            required: [true,'Password is required'],
             // REMOVED minlength constraint from here to prevent update validation crashes
             select: false,
         },
