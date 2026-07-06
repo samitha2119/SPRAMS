@@ -229,3 +229,113 @@ export default function UserManagementPage() {
                     Add New User
                 </button>
             </div>
+            {/* Filters */}
+            <div className="card py-4 flex flex-col sm:flex-row gap-3 items-center">
+                <FunnelIcon className="w-4 h-4 text-slate-400" />
+                <select
+                    value={filters.role}
+                    onChange={(e) => setFilters(f => ({ ...f, role: e.target.value }))}
+                    className="input-field py-1.5 text-sm w-full sm:w-40"
+                >
+                    <option value="">All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="lecturer">Lecturer</option>
+                    <option value="student">Student</option>
+                </select>
+                <select
+                    value={filters.isActive}
+                    onChange={(e) => setFilters(f => ({ ...f, isActive: e.target.value }))}
+                    className="input-field py-1.5 text-sm w-full sm:w-40"
+                >
+                    <option value="">All Status</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+                <button onClick={() => setFilters({ role: '', isActive: '' })} className="btn-ghost text-sm ml-auto">
+                    Clear Filters
+                </button>
+            </div>
+
+            {error && <ErrorAlert message={error} />}
+
+            {loading ? <PageSpinner /> : (
+                <div className="card p-0 overflow-hidden border-slate-200">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">User</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Role</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Joined</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {users.map((user) => (
+                                    <tr key={user._id} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm">
+                                                    {user.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold text-slate-800 text-sm">{user.name}</p>
+                                                    <p className="text-xs text-slate-400">{user.email}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`badge ${user.role === 'admin' ? 'badge-red' :
+                                                user.role === 'lecturer' ? 'badge-blue' : 'badge-green'
+                                                } capitalize text-[10px]`}>
+                                                {user.role}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {user.isActive ? (
+                                                <span className="flex items-center gap-1.5 text-green-600 text-xs font-bold">
+                                                    <CheckCircleIcon className="w-4 h-4" /> Active
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-1.5 text-slate-400 text-xs font-bold">
+                                                    <XCircleIcon className="w-4 h-4" /> Inactive
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-xs text-slate-500 font-medium">
+                                            {new Date(user.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => setEditUser(user)}
+                                                    className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all"
+                                                    title="Edit Permissions"
+                                                >
+                                                    <ShieldCheckIcon className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setDeleteConfirm(user)}
+                                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                    title="Delete User"
+                                                >
+                                                    <TrashIcon className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
+                        <Pagination
+                            page={pagination.page}
+                            totalPages={pagination.totalPages}
+                            onPageChange={fetchUsers}
+                        />
+                    </div>
+                </div>
+            )}
