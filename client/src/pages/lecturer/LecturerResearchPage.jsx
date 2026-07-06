@@ -34,7 +34,7 @@ export default function LecturerResearchPage() {
             const { data } = await lecturerResearchAPI.getAll({ page, limit: 10 });
             setEntries(data.data.entries);
             setPagination(data.data.pagination);
-        } catch (err) {
+        } catch {
             toast.error('Failed to load research entries');
         } finally {
             setLoading(false);
@@ -139,6 +139,7 @@ export default function LecturerResearchPage() {
 
     return (
         <div className="space-y-6 fade-in">
+            {/* Header */}
             <div className="flex items-start justify-between flex-wrap gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
@@ -156,6 +157,7 @@ export default function LecturerResearchPage() {
                 </button>
             </div>
 
+            {/* Form */}
             {showForm && (
                 <form onSubmit={handleSubmit} className="card space-y-4">
                     <h2 className="font-semibold text-slate-700">
@@ -221,6 +223,7 @@ export default function LecturerResearchPage() {
                         </div>
                     </div>
 
+                    {/* Publication details */}
                     <div className="border-t pt-4 mt-2">
                         <h3 className="font-medium text-slate-600 mb-3 text-sm">Publication Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -297,6 +300,7 @@ export default function LecturerResearchPage() {
                         </div>
                     </div>
 
+                    {/* Files */}
                     <div>
                         <label className="form-label">Attach Files</label>
                         <input
@@ -347,6 +351,7 @@ export default function LecturerResearchPage() {
                                         {entry.journalName && ` · ${entry.journalName}`}
                                     </p>
 
+                                    {/* Expanded details */}
                                     {expandedId === entry._id && (
                                         <div className="mt-3 space-y-2 text-sm text-slate-600 border-t pt-3">
                                             <p><strong>Abstract:</strong> {entry.abstract}</p>
@@ -373,6 +378,7 @@ export default function LecturerResearchPage() {
                                     )}
                                 </div>
 
+                                {/* Actions */}
                                 <div className="flex items-center gap-1 flex-shrink-0">
                                     <button
                                         onClick={() => setExpandedId(expandedId === entry._id ? null : entry._id)}
@@ -402,6 +408,25 @@ export default function LecturerResearchPage() {
                             </div>
                         </div>
                     ))}
+
+                    {/* Pagination */}
+                    {pagination.totalPages > 1 && (
+                        <div className="flex justify-center gap-2 pt-4">
+                            <button
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="btn-secondary text-xs disabled:opacity-50"
+                            >Previous</button>
+                            <span className="text-sm text-slate-500 flex items-center">
+                                Page {page} of {pagination.totalPages}
+                            </span>
+                            <button
+                                onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                                disabled={page === pagination.totalPages}
+                                className="btn-secondary text-xs disabled:opacity-50"
+                            >Next</button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
