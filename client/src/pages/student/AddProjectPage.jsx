@@ -101,7 +101,74 @@ export default function AddProjectPage() {
                     />
                     {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
                 </div>
+                 {/* Two-column fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label className="label">Department *</label>
+                        <select
+                            className={`input-field ${errors.department ? 'border-red-400' : ''}`}
+                            {...register('department', { required: 'Department is required' })}
+                        >
+                            <option value="">Select department</option>
+                            {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                        {errors.department && <p className="text-xs text-red-500 mt-1">{errors.department.message}</p>}
+                    </div>
+                    <div>
+                        <label className="label">Academic Year *</label>
+                        <input
+                            className={`input-field ${errors.academicYear ? 'border-red-400' : ''}`}
+                            placeholder="e.g. 2024/2025"
+                            {...register('academicYear', {
+                                required: 'Academic year required',
+                                pattern: { value: /^\d{4}\/\d{4}$/, message: 'Format: YYYY/YYYY' }
+                            })}
+                        />
+                        {errors.academicYear && <p className="text-xs text-red-500 mt-1">{errors.academicYear.message}</p>}
+                    </div>
+                    <div>
+                        <label className="label">Group Name *</label>
+                        <input
+                            className={`input-field ${errors.groupName ? 'border-red-400' : ''}`}
+                            placeholder="e.g. Team Alpha"
+                            {...register('groupName', { required: 'Group name is required' })}
+                        />
+                        {errors.groupName && <p className="text-xs text-red-500 mt-1">{errors.groupName.message}</p>}
+                    </div>
+                    <div>
+                        <label className="label">Supervisor *</label>
+                        <input
+                            className={`input-field ${errors.supervisor ? 'border-red-400' : ''}`}
+                            placeholder="e.g. Dr. John Smith"
+                            {...register('supervisor', { required: 'Supervisor is required' })}
+                        />
+                        {errors.supervisor && <p className="text-xs text-red-500 mt-1">{errors.supervisor.message}</p>}
+                    </div>
+                </div>
+                  {/* Abstract */}
+                <div>
+                    <label className="label">Abstract *</label>
+                    <textarea
+                        rows={6}
+                        className={`input-field resize-none ${errors.abstract ? 'border-red-400' : ''}`}
+                        placeholder="Write your project abstract here (minimum 50 characters)..."
+                        {...register('abstract', {
+                            required: 'Abstract is required',
+                            minLength: { value: 50, message: 'Minimum 50 characters' }
+                        })}
+                    />
+                    {errors.abstract && <p className="text-xs text-red-500 mt-1">{errors.abstract.message}</p>}
+                </div>
             </form>
         </div>
     );
 }
+            
+        
+
+
+
+        
+        
+
+
