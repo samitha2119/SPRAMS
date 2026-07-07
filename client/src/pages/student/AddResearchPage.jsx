@@ -180,6 +180,32 @@ export default function StudentResearchPage() {
                     </button>
                 )}
             </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-slate-200">
+                <button
+                    onClick={() => setActiveTab('research')}
+                    className={`flex items-center gap-2 py-3 px-6 border-b-2 font-semibold text-sm transition-all ${
+                        activeTab === 'research'
+                            ? 'border-green-600 text-green-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                    }`}
+                >
+                    <BookOpenIcon className="w-4 h-4" />
+                    Research Submissions ({pagination.total || 0})
+                </button>
+                <button
+                    onClick={() => setActiveTab('projects')}
+                    className={`flex items-center gap-2 py-3 px-6 border-b-2 font-semibold text-sm transition-all ${
+                        activeTab === 'projects'
+                            ? 'border-green-600 text-green-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                    }`}
+                >
+                    <FolderIcon className="w-4 h-4" />
+                    Project Submissions ({projectPagination.total || 0})
+                </button>
+            </div>
         </div>
     );
 }
