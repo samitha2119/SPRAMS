@@ -286,6 +286,75 @@ export default function ProjectDetailPage() {
                     <DocumentTextIcon className="w-4 h-4" /> Cite this Work
                 </button>
             </div>
+
+            {/* Main Content Card */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                {/* Header Decoration */}
+                <div className="h-2 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-500" />
+
+                <div className="p-8 md:p-10">
+                    <div className="flex flex-wrap items-center gap-3 mb-6">
+                        <span className="badge badge-blue px-3 py-1 text-sm font-bold uppercase tracking-wider">
+                            {project.academicYear}
+                        </span>
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm font-medium">
+                            <BuildingOfficeIcon className="w-4 h-4" />
+                            {project.department}
+                        </div>
+                        <span className={`badge px-3 py-1 text-sm font-bold uppercase tracking-wider ${
+                            project.status === 'Completed' ? 'badge-green bg-emerald-100 text-emerald-800' :
+                            project.status === 'Ongoing' ? 'badge-blue bg-blue-100 text-blue-800' :
+                            'badge-yellow bg-amber-100 text-amber-800'
+                        }`}>
+                            {project.status || 'Proposed'}
+                        </span>
+                    </div>
+
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-8">
+                        {project.title}
+                    </h1>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        {/* Abstract Section */}
+                        <div className="lg:col-span-2 space-y-8">
+                            <section>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <h2 className="text-xl font-bold text-slate-800">Abstract</h2>
+                                    <div className="h-px flex-1 bg-slate-100" />
+                                </div>
+                                <div className="prose prose-slate max-w-none">
+                                    <p className="text-slate-600 leading-relaxed text-lg whitespace-pre-wrap">
+                                        {project.abstract}
+                                    </p>
+                                </div>
+                            </section>
+
+                            <section className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <UserGroupIcon className="w-5 h-5 text-primary-600" />
+                                    <h2 className="text-lg font-bold text-slate-800">Project Members</h2>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {project.members?.map((m, idx) => (
+                                        <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold">
+                                                {m.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-slate-800 text-sm">{m.name}</p>
+                                                <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">{m.regNo}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {(!project.members || project.members.length === 0) && (
+                                        <p className="text-sm text-slate-400 italic col-span-2">No members listed</p>
+                                    )}
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
