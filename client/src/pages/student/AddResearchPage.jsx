@@ -158,6 +158,64 @@ export default function AddResearchPage() {
                     />
                     {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description.message}</p>}
                 </div>
+
+                {/* Proposal PDF Upload */}
+                <div>
+                    <label className="label font-medium text-slate-700">Proposal PDF (Optional)</label>
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-2xl hover:border-primary-400 transition-colors bg-slate-50/50 cursor-pointer relative">
+                        <div className="space-y-1 text-center">
+                            {proposalFile ? (
+                                <div className="flex flex-col items-center">
+                                    <svg className="mx-auto h-12 w-12 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <div className="flex text-sm text-slate-600 mt-2 font-medium">
+                                        <span>{proposalFile.name}</span>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setProposalFile(null);
+                                            }}
+                                            className="ml-2 text-red-500 hover:text-red-700"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-1">{(proposalFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center">
+                                    <svg className="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    <div className="flex text-sm text-slate-600 mt-2 justify-center">
+                                        <label htmlFor="proposal-upload" className="relative cursor-pointer rounded-md font-semibold text-primary-600 hover:text-primary-500 focus-within:outline-none">
+                                            <span>Upload a proposal PDF</span>
+                                            <input
+                                                id="proposal-upload"
+                                                name="proposal-upload"
+                                                type="file"
+                                                accept=".pdf"
+                                                className="sr-only"
+                                                onChange={(e) => {
+                                                    const file = e.target.files[0];
+                                                    if (file && file.type === 'application/pdf') {
+                                                        setProposalFile(file);
+                                                    } else if (file) {
+                                                        toast.error('Only PDF files are allowed');
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-1">PDF up to 50MB</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
             </form>
         </div>
     );
