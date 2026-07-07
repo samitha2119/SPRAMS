@@ -206,6 +206,75 @@ export default function StudentResearchPage() {
                     Project Submissions ({projectPagination.total || 0})
                 </button>
             </div>
+
+            {/* Form */}
+            {showForm && (
+                <form onSubmit={handleSubmit} className="card space-y-4">
+                    <h2 className="font-semibold text-slate-700">
+                        {editingId ? 'Edit Research' : 'New Research Submission'}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="md:col-span-2">
+                            <label className="form-label">Title *</label>
+                            <input type="text" required minLength={5} className="form-input"
+                                value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="form-label">Abstract *</label>
+                            <textarea required minLength={50} rows={4} className="form-input"
+                                value={form.abstract} onChange={(e) => setForm({ ...form, abstract: e.target.value })} />
+                        </div>
+                        <div>
+                            <label className="form-label">Department *</label>
+                            <input type="text" required className="form-input"
+                                value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} />
+                        </div>
+                        <div>
+                            <label className="form-label">Academic Year *</label>
+                            <input type="text" required pattern="\d{4}/\d{4}" placeholder="e.g. 2023/2024" title="Must be in format YYYY/YYYY (e.g. 2023/2024)" className="form-input"
+                                value={form.academicYear} onChange={(e) => setForm({ ...form, academicYear: e.target.value })} />
+                        </div>
+                        <div>
+                            <label className="form-label">Supervisor</label>
+                            <input type="text" className="form-input" placeholder="Dr./Prof. Name"
+                                value={form.supervisor} onChange={(e) => setForm({ ...form, supervisor: e.target.value })} />
+                        </div>
+                        <div>
+                            <label className="form-label">Keywords (comma-separated)</label>
+                            <input type="text" className="form-input" placeholder="AI, IoT, ML"
+                                value={form.keywords} onChange={(e) => setForm({ ...form, keywords: e.target.value })} />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="form-label">Research Proposal (PDF) *</label>
+                        <input
+                            type="file"
+                            accept=".pdf"
+                            className="form-input"
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file && file.type === 'application/pdf') {
+                                    setProposalFile(file);
+                                } else if (file) {
+                                    toast.error('Only PDF is allowed');
+                                }
+                            }}
+                        />
+                        {proposalFile && (
+                            <p className="text-xs text-green-600 font-semibold mt-1">Selected: {proposalFile.name}</p>
+                        )}
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                        <button type="submit" disabled={submitting}
+                            className="btn-primary bg-green-600 hover:bg-green-700">
+                            {submitting ? 'Saving...' : (editingId ? 'Update' : 'Submit Research')}
+                        </button>
+                        <button type="button" onClick={resetForm} className="btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            )}
         </div>
     );
 }
