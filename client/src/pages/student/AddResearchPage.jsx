@@ -362,7 +362,56 @@ export default function StudentResearchPage() {
                         </div>
                     )}
                 </>
-            ) : null}
+            ) : (
+                <>
+                    {projects.length === 0 && !projectsLoading ? (
+                        <EmptyState icon={FolderIcon} title="No Projects" message="You have not submitted or been added to any academic projects yet." />
+                    ) : (
+                        <div className="space-y-3">
+                            {projects.map((project) => (
+                                <div key={project._id} className="card hover:shadow-md transition-shadow">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                            <FolderIcon className="w-5 h-5 text-blue-600" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                <h3 className="font-semibold text-slate-800 text-sm truncate">{project.title}</h3>
+                                                <span className="badge badge-blue">
+                                                    {project.academicYear}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-slate-500">
+                                                {project.department} · Group: {project.groupName} · Supervisor: {project.supervisor}
+                                            </p>
+                                            <p className="text-xs text-slate-600 mt-2 line-clamp-2">{project.abstract}</p>
+                                        </div>
+                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                            <Link
+                                                to={`/projects/${project._id}`}
+                                                className="btn-secondary text-xs px-3 py-1.5"
+                                            >
+                                                View Details
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {projectPagination.totalPages > 1 && (
+                                <div className="flex justify-center gap-2 pt-4">
+                                    <button onClick={() => setProjectPage((p) => Math.max(1, p - 1))} disabled={projectPage === 1}
+                                        className="btn-secondary text-xs disabled:opacity-50">Previous</button>
+                                    <span className="text-sm text-slate-500 flex items-center">Page {projectPage} of {projectPagination.totalPages}</span>
+                                    <button onClick={() => setProjectPage((p) => Math.min(projectPagination.totalPages, p + 1))}
+                                        disabled={projectPage === projectPagination.totalPages}
+                                        className="btn-secondary text-xs disabled:opacity-50">Next</button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </>
+            )}
         </div>
     );
 }
