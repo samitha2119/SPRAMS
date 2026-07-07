@@ -216,6 +216,20 @@ export default function AddResearchPage() {
                     </div>
                 </div>
 
+
+                {/* Submit */}
+                <div className="flex gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onClick={() => navigate('/research')} className="btn-secondary flex-1">
+                        Cancel
+                    </button>
+                    <button type="submit" disabled={loading} className="btn-primary flex-1 py-3">
+                        {loading ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <Spinner size="sm" /> Submitting...
+                            </span>
+                        ) : 'Submit Research'}
+                    </button>
+                </div>
             </form>
         </div>
     );
