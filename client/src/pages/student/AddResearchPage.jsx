@@ -275,6 +275,94 @@ export default function StudentResearchPage() {
                     </div>
                 </form>
             )}
+
+            {/* Tab Contents */}
+            {activeTab === 'research' ? (
+                <>
+                    {entries.length === 0 && !loading ? (
+                        <EmptyState icon={DocumentTextIcon} title="No Research" message="Submit your first research entry to get started." />
+                    ) : (
+                        <div className="space-y-3">
+                            {entries.map((entry) => (
+                                <div key={entry._id} className="card hover:shadow-md transition-shadow">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+                                            <BookOpenIcon className="w-5 h-5 text-green-600" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                <h3 className="font-semibold text-slate-800 text-sm truncate">{entry.title}</h3>
+                                                <span className={`badge ${statusColors[entry.status] || 'badge-blue'}`}>
+                                                    {entry.status}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-slate-500">
+                                                {entry.department} · {entry.academicYear}
+                                                {entry.supervisor && ` · Supervisor: ${entry.supervisor}`}
+                                            </p>
+
+                                            {expandedId === entry._id && (
+                                                <div className="mt-3 space-y-2 text-sm text-slate-600 border-t pt-3">
+                                                    <p><strong>Abstract:</strong> {entry.abstract}</p>
+                                                    {entry.keywords?.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {entry.keywords.map((kw, i) => (
+                                                                <span key={i} className="badge badge-green text-xs">{kw}</span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {entry.files?.length > 0 && (
+                                                        <p><strong>Files:</strong> {entry.files.length} attached</p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                            <Link
+                                                to={`/research/${entry._id}`}
+                                                className="btn-secondary text-xs px-3 py-1.5"
+                                            >
+                                                View Details
+                                            </Link>
+                                            <button
+                                                onClick={() => setExpandedId(expandedId === entry._id ? null : entry._id)}
+                                                className="p-2 rounded-lg hover:bg-slate-100 text-slate-400"
+                                            >
+                                                {expandedId === entry._id ?
+                                                    <ChevronUpIcon className="w-4 h-4" /> :
+                                                    <ChevronDownIcon className="w-4 h-4" />}
+                                            </button>
+                                            {((entry.submittedBy?._id || entry.submittedBy) === user?._id) && (
+                                                <>
+                                                    <button onClick={() => handleEdit(entry)}
+                                                        className="p-2 rounded-lg hover:bg-blue-50 text-blue-500" title="Edit">
+                                                        <PencilSquareIcon className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={() => handleDelete(entry._id)}
+                                                        className="p-2 rounded-lg hover:bg-red-50 text-red-500" title="Delete">
+                                                        <TrashIcon className="w-4 h-4" />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {pagination.totalPages > 1 && (
+                                <div className="flex justify-center gap-2 pt-4">
+                                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+                                        className="btn-secondary text-xs disabled:opacity-50">Previous</button>
+                                    <span className="text-sm text-slate-500 flex items-center">Page {page} of {pagination.totalPages}</span>
+                                    <button onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                                        disabled={page === pagination.totalPages}
+                                        className="btn-secondary text-xs disabled:opacity-50">Next</button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </>
+            ) : null}
         </div>
     );
 }
