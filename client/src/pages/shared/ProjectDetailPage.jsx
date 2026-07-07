@@ -480,9 +480,296 @@ export default function ProjectDetailPage() {
                     </div>
                 </div>
             </div>
+            {/* File Preview Modal (Overlay) */}
+            {previewFile && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-slate-900/90 backdrop-blur-sm">
+                    <div
+                        className="relative bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                        style={{ width: '96vw', height: '96vh' }}
+                    >
+                        {/* Modal Header */}
+                        <div className="flex-shrink-0 px-5 py-3 border-b border-slate-100 flex items-center justify-between bg-white">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <span className="bg-red-100 text-red-600 text-[10px] font-extrabold px-2 py-1 rounded uppercase tracking-widest flex-shrink-0">
+                                    PDF
+                                </span>
+                                <span className="font-bold text-slate-800 truncate">{previewFile.originalName}</span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                                <button
+                                    onClick={handleDownloadProposal}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
+                                    title="Download file"
+                                >
+                                    <ArrowDownTrayIcon className="w-4 h-4" />
+                                    Download
+                                </button>
+                                <button
+                                    onClick={() => setPreviewFile(null)}
+                                    className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"
+                                    title="Close preview"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 overflow-hidden bg-slate-100">
+                            {previewFile.fileType.startsWith('image') ? (
+                                <div className="w-full h-full overflow-auto flex items-center justify-center p-4">
+                                    <img
+                                        src={previewFile.url}
+                                        alt={previewFile.originalName}
+                                        className="max-w-full max-h-full object-contain shadow-lg rounded"
+                                    />
+                                </div>
+                            ) : previewFile.fileType === 'application/pdf' ? (
+                                <iframe
+                                    src={previewFile.url}
+                                    title="PDF Preview"
+                                    className="w-full h-full border-0"
+                                    style={{ minHeight: '100%' }}
+                                />
+                            ) : previewFile.fileType.startsWith('video/') ? (
+                                <div className="w-full h-full flex items-center justify-center p-4 bg-slate-950">
+                                    <video
+                                        src={previewFile.url}
+                                        controls
+                                        autoPlay
+                                        className="max-w-full max-h-full rounded-xl shadow-2xl"
+                                    />
+                                </div>
+                            ) : previewFile.fileType.startsWith('audio/') ? (
+                                <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-slate-50">
+                                    <div className="w-24 h-24 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 mb-6 shadow-sm">
+                                        <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                                        </svg>
+                                    </div>
+                                    <audio
+                                        src={previewFile.url}
+                                        controls
+                                        autoPlay
+                                        className="w-full max-w-md"
+                                    />
+                                    <p className="text-sm text-slate-500 font-medium mt-4">Playing: {previewFile.originalName}</p>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center h-full text-center p-12">
+                                    <DocumentTextIcon className="w-20 h-20 text-slate-300 mx-auto mb-4" />
+                                    <p className="text-slate-500 mt-2 font-medium">Preview not available for this file type</p>
+                                    <button 
+                                        onClick={() => {
+                                            if (previewFile.isProposal) handleDownloadProposal();
+                                            else if (previewFile.isFinalReport) handleDownloadFinalReport();
+                                            else handleDownload(previewFile);
+                                        }} 
+                                        className="btn-primary mt-6"
+                                    >
+                                        Download to View
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showFinalizeModal && (
+                <Modal
+                    isOpen={showFinalizeModal}
+                    onClose={() => setShowFinalizeModal(false)}
+                    title="Finalize Project Submission"
+                    size="md"
+                >
+                    <FinalizeProjectForm
+                        project={project}
+                        onClose={() => setShowFinalizeModal(false)}
+                        onSuccess={async () => {
+                            const { data } = await projectsAPI.getOne(id);
+                            setProject(data.data.project);
+                            setShowFinalizeModal(false);
+                        }}
+                    />
+                </Modal>
+            )}
+            {showCitationModal && (
+                <Modal
+                    isOpen={showCitationModal}
+                    onClose={() => setShowCitationModal(false)}
+                    title="Cite this Work"
+                    size="md"
+                >
+                    <div className="space-y-6 pt-2">
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                            Use the following pre-formatted citations to reference this academic asset in your reports, papers, or bibliographies.
+                        </p>
+                        
+                        {/* APA Style */}
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative group hover:border-primary-300 transition-colors">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">APA Style</span>
+                                <button
+                                    onClick={() => copyToClipboard(apaCitation, 'APA')}
+                                    className="text-xs font-bold text-primary-600 hover:text-primary-800 transition-colors bg-primary-50 px-2.5 py-1 rounded-lg border border-primary-100 hover:bg-primary-100"
+                                >
+                                    Copy APA
+                                </button>
+                            </div>
+                            <p className="text-sm text-slate-700 leading-relaxed font-mono select-all bg-white p-3 rounded-lg border border-slate-100 break-words">
+                                {apaCitation}
+                            </p>
+                        </div>
+
+                        {/* IEEE Style */}
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative group hover:border-primary-300 transition-colors">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">IEEE Style</span>
+                                <button
+                                    onClick={() => copyToClipboard(ieeeCitation, 'IEEE')}
+                                    className="text-xs font-bold text-primary-600 hover:text-primary-800 transition-colors bg-primary-50 px-2.5 py-1 rounded-lg border border-primary-100 hover:bg-primary-100"
+                                >
+                                    Copy IEEE
+                                </button>
+                            </div>
+                            <p className="text-sm text-slate-700 leading-relaxed font-mono select-all bg-white p-3 rounded-lg border border-slate-100 break-words">
+                                {ieeeCitation}
+                            </p>
+                        </div>
+
+                        {/* Harvard Style */}
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative group hover:border-primary-300 transition-colors">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Harvard Style</span>
+                                <button
+                                    onClick={() => copyToClipboard(harvardCitation, 'Harvard')}
+                                    className="text-xs font-bold text-primary-600 hover:text-primary-800 transition-colors bg-primary-50 px-2.5 py-1 rounded-lg border border-primary-100 hover:bg-primary-100"
+                                >
+                                    Copy Harvard
+                                </button>
+                            </div>
+                            <p className="text-sm text-slate-700 leading-relaxed font-mono select-all bg-white p-3 rounded-lg border border-slate-100 break-words">
+                                {harvardCitation}
+                            </p>
+                        </div>
+
+                        <div className="flex gap-3 pt-4 border-t border-slate-100">
+                            <button
+                                type="button"
+                                onClick={() => setShowCitationModal(false)}
+                                className="btn-secondary w-full py-2.5 rounded-xl font-bold text-sm"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
         </div>
     );
 }
+
+function FinalizeProjectForm({ project, onClose, onSuccess }) {
+    const [submitting, setSubmitting] = useState(false);
+    const [finalReport, setFinalReport] = useState(null);
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        defaultValues: { githubLink: project.githubLink || '' }
+    });
+
+    const onSubmit = async (data) => {
+        if (!finalReport) {
+            toast.error('Final End Report PDF is required');
+            return;
+        }
+        setSubmitting(true);
+        try {
+            const formData = new FormData();
+            formData.append('githubLink', data.githubLink);
+            formData.append('finalReport', finalReport);
+
+            await projectsAPI.update(project._id, formData);
+            toast.success('Project finalized successfully!');
+            onSuccess();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to finalize project');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
+            <div>
+                <label className="label">GitHub Repository (Optional)</label>
+                <input
+                    type="url"
+                    className={`input-field ${errors.githubLink ? 'border-red-400' : ''}`}
+                    placeholder="https://github.com/username/repository"
+                    {...register('githubLink', {
+                        validate: value => {
+                            if (!value) return true;
+                            return /^https?:\/\/(www\.)?github\.com\/.+/i.test(value) || 'Must be a valid GitHub URL';
+                        }
+                    })}
+                />
+                {errors.githubLink && <p className="text-xs text-red-500 mt-1">{errors.githubLink.message}</p>}
+            </div>
+
+            <div>
+                <label className="label">Final End Report (PDF) *</label>
+                {finalReport ? (
+                    <div className="mt-1 flex justify-center px-4 py-6 border-2 border-slate-300 border-dashed rounded-xl bg-slate-50 relative">
+                        <div className="space-y-1 text-center">
+                            <div className="flex flex-col items-center">
+                                <svg className="mx-auto h-8 w-8 text-primary-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span className="text-xs font-semibold text-slate-700 mt-1">{finalReport.name}</span>
+                                <button type="button" onClick={() => setFinalReport(null)} className="text-xs text-red-500 font-bold hover:underline mt-1 relative z-10">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <label className="mt-1 flex justify-center px-4 py-6 border-2 border-slate-300 border-dashed rounded-xl hover:border-primary-400 bg-slate-50 transition-colors cursor-pointer relative">
+                        <div className="space-y-1 text-center">
+                            <div className="flex flex-col items-center">
+                                <svg className="mx-auto h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                <span className="font-bold text-primary-600 hover:text-primary-500 text-xs">
+                                    Upload report PDF
+                                </span>
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    className="sr-only"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file && file.type === 'application/pdf') {
+                                            setFinalReport(file);
+                                        } else if (file) {
+                                            toast.error('Only PDF files are allowed');
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </label>
+                )}
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+                <button type="submit" disabled={submitting} className="btn-primary flex-1 justify-center bg-primary-600 hover:bg-primary-700">
+                    {submitting ? <Spinner size="sm" /> : 'Finalize & Complete'}
+                </button>
+            </div>
+        </form>
+    );
+}
+
 function FileTable({ title, files, icon, typeColor, canManage, emptyMessage }) {
     if (files.length === 0) {
         if (!emptyMessage) return null;
