@@ -1,417 +1,236 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { studentResearchAPI, projectsAPI } from '../../services/api';
-import { PageSpinner, EmptyState } from '../../components/ui/Common';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { researchAPI } from '../../services/api';
+import { Spinner } from '../../components/ui/Common';
 import toast from 'react-hot-toast';
 import {
-    PlusIcon, DocumentTextIcon, PencilSquareIcon,
-    TrashIcon, ChevronDownIcon, ChevronUpIcon,
-    BookOpenIcon, FolderIcon, BriefcaseIcon,
+    DocumentPlusIcon, PaperClipIcon, TagIcon,
+    CheckCircleIcon,
 } from '@heroicons/react/24/outline';
+import { useForm } from 'react-hook-form';
 
-const INITIAL_FORM = {
-    title: '', abstract: '', department: '', academicYear: new Date().getFullYear() + '/' + (new Date().getFullYear() + 1),
-    supervisor: '', keywords: '',
-};
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 10 }, (_, i) => CURRENT_YEAR - i);
 
-export default function StudentResearchPage() {
-    const { user } = useAuth();
-    const [activeTab, setActiveTab] = useState('research');
-    const [entries, setEntries] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [showForm, setShowForm] = useState(false);
-    const [editingId, setEditingId] = useState(null);
-    const [form, setForm] = useState(INITIAL_FORM);
+export default function AddResearchPage() {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [tagInput, setTagInput] = useState('');
+    const [tags, setTags] = useState([]);
     const [proposalFile, setProposalFile] = useState(null);
-    const [submitting, setSubmitting] = useState(false);
-    const [expandedId, setExpandedId] = useState(null);
-    const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState({});
 
-    // Projects state
-    const [projects, setProjects] = useState([]);
-    const [projectsLoading, setProjectsLoading] = useState(false);
-    const [projectPage, setProjectPage] = useState(1);
-    const [projectPagination, setProjectPagination] = useState({});
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        defaultValues: {
+            title: '',
+            description: '',
+            year: new Date().getFullYear(),
+        },
+    });
 
-    const loadEntries = useCallback(async () => {
-        try {
-            setLoading(true);
-            const { data } = await studentResearchAPI.getAll({ page, limit: 10 });
-            setEntries(data.data.entries);
-            setPagination(data.data.pagination);
-        } catch {
-            toast.error('Failed to load research entries');
-        } finally {
-            setLoading(false);
+    const addTag = () => {
+        const t = tagInput.trim().toLowerCase();
+        if (t && !tags.includes(t) && tags.length < 20) {
+            setTags([...tags, t]);
+            setTagInput('');
         }
-    }, [page]);
-
-    const loadProjects = useCallback(async () => {
-        if (!user?._id) return;
-        try {
-            setProjectsLoading(true);
-            const { data } = await projectsAPI.getAll({
-                page: projectPage,
-                limit: 10
-            });
-            setProjects(data.data.projects);
-            setProjectPagination(data.data.pagination);
-        } catch {
-            toast.error('Failed to load project submissions');
-        } finally {
-            setProjectsLoading(false);
-        }
-    }, [user, projectPage]);
-
-    useEffect(() => {
-        document.title = 'My Work | SPRAMS';
-        loadEntries();
-        loadProjects();
-    }, [loadEntries, loadProjects]);
-
-    const resetForm = () => {
-        setForm(INITIAL_FORM);
-        setProposalFile(null);
-        setEditingId(null);
-        setShowForm(false);
     };
 
-    const handleEdit = (entry) => {
-        setForm({
-            title: entry.title || '',
-            abstract: entry.abstract || '',
-            department: entry.department || '',
-            academicYear: entry.academicYear || '',
-            supervisor: entry.supervisor || '',
-            keywords: Array.isArray(entry.keywords) ? entry.keywords.join(', ') : (entry.keywords || ''),
-        });
-        setEditingId(entry._id);
-        setShowForm(true);
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!editingId && !proposalFile) {
-            toast.error('Research proposal PDF is required for submission');
-            return;
-        }
-        setSubmitting(true);
+    const onSubmit = async (data) => {
+        setLoading(true);
         try {
             const formData = new FormData();
-            formData.append('title', form.title);
-            formData.append('abstract', form.abstract);
-            formData.append('department', form.department);
-            formData.append('academicYear', form.academicYear);
-            formData.append('supervisor', form.supervisor);
-            formData.append('keywords', JSON.stringify(
-                form.keywords.split(',').map((k) => k.trim()).filter(Boolean)
-            ));
+            formData.append('title', data.title);
+            formData.append('description', data.description);
+            formData.append('year', data.year);
+            formData.append('tags', JSON.stringify(tags));
             if (proposalFile) {
                 formData.append('proposal', proposalFile);
             }
 
-            if (editingId) {
-                await studentResearchAPI.update(editingId, formData);
-                toast.success('Research updated');
-            } else {
-                await studentResearchAPI.create(formData);
-                toast.success('Research submitted');
-            }
-            resetForm();
-            loadEntries();
+            await researchAPI.create(formData);
+            setSubmitted(true);
+            toast.success('Research entry submitted successfully!');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Submission failed');
         } finally {
-            setSubmitting(false);
+            setLoading(false);
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this research?')) return;
-        try {
-            await studentResearchAPI.delete(id);
-            toast.success('Research deleted');
-            loadEntries();
-        } catch {
-            toast.error('Failed to delete');
-        }
-    };
-
-    const statusColors = {
-        Proposed: 'badge-yellow',
-        Ongoing: 'badge-purple',
-        Completed: 'badge-blue',
-        Approved: 'badge-green',
-        Unfinished: 'badge-red',
-    };
-
-    if (loading && entries.length === 0 && projects.length === 0) return <PageSpinner />;
+    if (submitted) {
+        return (
+            <div className="max-w-2xl mx-auto fade-in">
+                <div className="card text-center py-16">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <CheckCircleIcon className="w-10 h-10 text-green-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2">Research Submitted!</h2>
+                    <p className="text-slate-500 mb-8 max-w-md mx-auto">
+                        Your research entry has been added to the repository. An automated summary will be generated shortly.
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                        <button onClick={() => navigate('/research')} className="btn-primary">
+                            View All Research
+                        </button>
+                        <button onClick={() => { setSubmitted(false); setFiles([]); setTags([]); }} className="btn-secondary">
+                            Submit Another
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6 fade-in">
-            <div className="flex items-start justify-between flex-wrap gap-3">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                        <BriefcaseIcon className="w-7 h-7 text-green-600" />
-                        My Work
-                    </h1>
-                    <p className="text-slate-500 mt-1">Submit and track your research and academic projects</p>
-                </div>
-                {activeTab === 'research' ? (
-                    <button
-                        onClick={() => { showForm ? resetForm() : setShowForm(true); }}
-                        className="btn-primary flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                    >
-                        <PlusIcon className="w-4 h-4" />
-                        {showForm ? 'Cancel' : 'Submit Research'}
-                    </button>
-                ) : (
-                    <button
-                        onClick={() => {
-                            // Redirect to submit project page or explore projects
-                            window.location.href = '/projects';
-                        }}
-                        className="btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                    >
-                        <PlusIcon className="w-4 h-4" />
-                        New Project
-                    </button>
-                )}
-            </div>
-
-            {/* Tabs */}
-            <div className="flex border-b border-slate-200">
-                <button
-                    onClick={() => setActiveTab('research')}
-                    className={`flex items-center gap-2 py-3 px-6 border-b-2 font-semibold text-sm transition-all ${
-                        activeTab === 'research'
-                            ? 'border-green-600 text-green-600'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                    }`}
-                >
-                    <BookOpenIcon className="w-4 h-4" />
-                    Research Submissions ({pagination.total || 0})
-                </button>
-                <button
-                    onClick={() => setActiveTab('projects')}
-                    className={`flex items-center gap-2 py-3 px-6 border-b-2 font-semibold text-sm transition-all ${
-                        activeTab === 'projects'
-                            ? 'border-green-600 text-green-600'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                    }`}
-                >
-                    <FolderIcon className="w-4 h-4" />
-                    Project Submissions ({projectPagination.total || 0})
-                </button>
+        <div className="max-w-3xl mx-auto space-y-6 fade-in pb-12">
+            {/* Header */}
+            <div>
+                <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <DocumentPlusIcon className="w-7 h-7 text-green-600" />
+                    Submit New Research
+                </h1>
+                <p className="text-slate-500 mt-1">Add your research entry with supporting files and metadata.</p>
             </div>
 
             {/* Form */}
-            {showForm && (
-                <form onSubmit={handleSubmit} className="card space-y-4">
-                    <h2 className="font-semibold text-slate-700">
-                        {editingId ? 'Edit Research' : 'New Research Submission'}
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="md:col-span-2">
-                            <label className="form-label">Title *</label>
-                            <input type="text" required minLength={5} className="form-input"
-                                value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-                        </div>
-                        <div className="md:col-span-2">
-                            <label className="form-label">Abstract *</label>
-                            <textarea required minLength={50} rows={4} className="form-input"
-                                value={form.abstract} onChange={(e) => setForm({ ...form, abstract: e.target.value })} />
-                        </div>
-                        <div>
-                            <label className="form-label">Department *</label>
-                            <input type="text" required className="form-input"
-                                value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} />
-                        </div>
-                        <div>
-                            <label className="form-label">Academic Year *</label>
-                            <input type="text" required pattern="\d{4}/\d{4}" placeholder="e.g. 2023/2024" title="Must be in format YYYY/YYYY (e.g. 2023/2024)" className="form-input"
-                                value={form.academicYear} onChange={(e) => setForm({ ...form, academicYear: e.target.value })} />
-                        </div>
-                        <div>
-                            <label className="form-label">Supervisor</label>
-                            <input type="text" className="form-input" placeholder="Dr./Prof. Name"
-                                value={form.supervisor} onChange={(e) => setForm({ ...form, supervisor: e.target.value })} />
-                        </div>
-                        <div>
-                            <label className="form-label">Keywords (comma-separated)</label>
-                            <input type="text" className="form-input" placeholder="AI, IoT, ML"
-                                value={form.keywords} onChange={(e) => setForm({ ...form, keywords: e.target.value })} />
-                        </div>
-                    </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="card space-y-6" noValidate>
+                {/* Title */}
+                <div>
+                    <label className="label">Research Title *</label>
+                    <input
+                        className={`input-field ${errors.title ? 'border-red-400' : ''}`}
+                        placeholder="e.g. Impact of Machine Learning on Healthcare Diagnostics"
+                        {...register('title', { required: 'Title required', minLength: { value: 5, message: 'Min 5 chars' } })}
+                    />
+                    {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
+                </div>
 
+                {/* Year and Tags */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label className="form-label">Research Proposal (PDF) *</label>
-                        <input
-                            type="file"
-                            accept=".pdf"
-                            className="form-input"
-                            onChange={(e) => {
-                                const file = e.target.files[0];
-                                if (file && file.type === 'application/pdf') {
-                                    setProposalFile(file);
-                                } else if (file) {
-                                    toast.error('Only PDF is allowed');
-                                }
-                            }}
-                        />
-                        {proposalFile && (
-                            <p className="text-xs text-green-600 font-semibold mt-1">Selected: {proposalFile.name}</p>
-                        )}
+                        <label className="label">Year *</label>
+                        <select className="input-field" {...register('year', { required: true })}>
+                            {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+                        </select>
                     </div>
-
-                    <div className="flex gap-3 pt-2">
-                        <button type="submit" disabled={submitting}
-                            className="btn-primary bg-green-600 hover:bg-green-700">
-                            {submitting ? 'Saving...' : (editingId ? 'Update' : 'Submit Research')}
-                        </button>
-                        <button type="button" onClick={resetForm} className="btn-secondary">Cancel</button>
+                    <div>
+                        <label className="label">Tags</label>
+                        <div className="flex gap-2">
+                            <input
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
+                                className="input-field flex-1"
+                                placeholder="Add tag, press Enter"
+                            />
+                            <button type="button" onClick={addTag} className="btn-secondary px-3 text-sm">+</button>
+                        </div>
                     </div>
-                </form>
-            )}
+                </div>
 
-            {/* Tab Contents */}
-            {activeTab === 'research' ? (
-                <>
-                    {entries.length === 0 && !loading ? (
-                        <EmptyState icon={DocumentTextIcon} title="No Research" message="Submit your first research entry to get started." />
-                    ) : (
-                        <div className="space-y-3">
-                            {entries.map((entry) => (
-                                <div key={entry._id} className="card hover:shadow-md transition-shadow">
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
-                                            <BookOpenIcon className="w-5 h-5 text-green-600" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                <h3 className="font-semibold text-slate-800 text-sm truncate">{entry.title}</h3>
-                                                <span className={`badge ${statusColors[entry.status] || 'badge-blue'}`}>
-                                                    {entry.status}
-                                                </span>
-                                            </div>
-                                            <p className="text-xs text-slate-500">
-                                                {entry.department} · {entry.academicYear}
-                                                {entry.supervisor && ` · Supervisor: ${entry.supervisor}`}
-                                            </p>
+                {/* Tags display */}
+                {tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                        {tags.map((tag) => (
+                            <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-50 text-primary-700 rounded-full text-xs border border-primary-100">
+                                <TagIcon className="w-3 h-3" />
+                                {tag}
+                                <button
+                                    type="button"
+                                    onClick={() => setTags(tags.filter((t) => t !== tag))}
+                                    className="text-primary-400 hover:text-primary-700 ml-1"
+                                    aria-label={`Remove tag ${tag}`}
+                                >×</button>
+                            </span>
+                        ))}
+                    </div>
+                )}
 
-                                            {expandedId === entry._id && (
-                                                <div className="mt-3 space-y-2 text-sm text-slate-600 border-t pt-3">
-                                                    <p><strong>Abstract:</strong> {entry.abstract}</p>
-                                                    {entry.keywords?.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {entry.keywords.map((kw, i) => (
-                                                                <span key={i} className="badge badge-green text-xs">{kw}</span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                    {entry.files?.length > 0 && (
-                                                        <p><strong>Files:</strong> {entry.files.length} attached</p>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-1 flex-shrink-0">
-                                            <Link
-                                                to={`/research/${entry._id}`}
-                                                className="btn-secondary text-xs px-3 py-1.5"
-                                            >
-                                                View Details
-                                            </Link>
-                                            <button
-                                                onClick={() => setExpandedId(expandedId === entry._id ? null : entry._id)}
-                                                className="p-2 rounded-lg hover:bg-slate-100 text-slate-400"
-                                            >
-                                                {expandedId === entry._id ?
-                                                    <ChevronUpIcon className="w-4 h-4" /> :
-                                                    <ChevronDownIcon className="w-4 h-4" />}
-                                            </button>
-                                            {((entry.submittedBy?._id || entry.submittedBy) === user?._id) && (
-                                                <>
-                                                    <button onClick={() => handleEdit(entry)}
-                                                        className="p-2 rounded-lg hover:bg-blue-50 text-blue-500" title="Edit">
-                                                        <PencilSquareIcon className="w-4 h-4" />
-                                                    </button>
-                                                    <button onClick={() => handleDelete(entry._id)}
-                                                        className="p-2 rounded-lg hover:bg-red-50 text-red-500" title="Delete">
-                                                        <TrashIcon className="w-4 h-4" />
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
+                {/* Description */}
+                <div>
+                    <label className="label">Description *</label>
+                    <textarea
+                        rows={6}
+                        className={`input-field resize-none ${errors.description ? 'border-red-400' : ''}`}
+                        placeholder="Provide a detailed description of your research..."
+                        {...register('description', { required: 'Description required', minLength: { value: 20, message: 'Min 20 chars' } })}
+                    />
+                    {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description.message}</p>}
+                </div>
+
+                {/* Proposal PDF Upload */}
+                <div>
+                    <label className="label font-medium text-slate-700">Proposal PDF (Optional)</label>
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-2xl hover:border-primary-400 transition-colors bg-slate-50/50 cursor-pointer relative">
+                        <div className="space-y-1 text-center">
+                            {proposalFile ? (
+                                <div className="flex flex-col items-center">
+                                    <svg className="mx-auto h-12 w-12 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <div className="flex text-sm text-slate-600 mt-2 font-medium">
+                                        <span>{proposalFile.name}</span>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setProposalFile(null);
+                                            }}
+                                            className="ml-2 text-red-500 hover:text-red-700"
+                                        >
+                                            Remove
+                                        </button>
                                     </div>
+                                    <p className="text-xs text-slate-400 mt-1">{(proposalFile.size / 1024 / 1024).toFixed(2)} MB</p>
                                 </div>
-                            ))}
-
-                            {pagination.totalPages > 1 && (
-                                <div className="flex justify-center gap-2 pt-4">
-                                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                                        className="btn-secondary text-xs disabled:opacity-50">Previous</button>
-                                    <span className="text-sm text-slate-500 flex items-center">Page {page} of {pagination.totalPages}</span>
-                                    <button onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                                        disabled={page === pagination.totalPages}
-                                        className="btn-secondary text-xs disabled:opacity-50">Next</button>
+                            ) : (
+                                <div className="flex flex-col items-center">
+                                    <svg className="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    <div className="flex text-sm text-slate-600 mt-2 justify-center">
+                                        <label htmlFor="proposal-upload" className="relative cursor-pointer rounded-md font-semibold text-primary-600 hover:text-primary-500 focus-within:outline-none">
+                                            <span>Upload a proposal PDF</span>
+                                            <input
+                                                id="proposal-upload"
+                                                name="proposal-upload"
+                                                type="file"
+                                                accept=".pdf"
+                                                className="sr-only"
+                                                onChange={(e) => {
+                                                    const file = e.target.files[0];
+                                                    if (file && file.type === 'application/pdf') {
+                                                        setProposalFile(file);
+                                                    } else if (file) {
+                                                        toast.error('Only PDF files are allowed');
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-1">PDF up to 50MB</p>
                                 </div>
                             )}
                         </div>
-                    )}
-                </>
-            ) : (
-                <>
-                    {projects.length === 0 && !projectsLoading ? (
-                        <EmptyState icon={FolderIcon} title="No Projects" message="You have not submitted or been added to any academic projects yet." />
-                    ) : (
-                        <div className="space-y-3">
-                            {projects.map((project) => (
-                                <div key={project._id} className="card hover:shadow-md transition-shadow">
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                            <FolderIcon className="w-5 h-5 text-blue-600" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                <h3 className="font-semibold text-slate-800 text-sm truncate">{project.title}</h3>
-                                                <span className="badge badge-blue">
-                                                    {project.academicYear}
-                                                </span>
-                                            </div>
-                                            <p className="text-xs text-slate-500">
-                                                {project.department} · Group: {project.groupName} · Supervisor: {project.supervisor}
-                                            </p>
-                                            <p className="text-xs text-slate-600 mt-2 line-clamp-2">{project.abstract}</p>
-                                        </div>
-                                        <div className="flex items-center gap-1 flex-shrink-0">
-                                            <Link
-                                                to={`/projects/${project._id}`}
-                                                className="btn-secondary text-xs px-3 py-1.5"
-                                            >
-                                                View Details
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                    </div>
+                </div>
 
-                            {projectPagination.totalPages > 1 && (
-                                <div className="flex justify-center gap-2 pt-4">
-                                    <button onClick={() => setProjectPage((p) => Math.max(1, p - 1))} disabled={projectPage === 1}
-                                        className="btn-secondary text-xs disabled:opacity-50">Previous</button>
-                                    <span className="text-sm text-slate-500 flex items-center">Page {projectPage} of {projectPagination.totalPages}</span>
-                                    <button onClick={() => setProjectPage((p) => Math.min(projectPagination.totalPages, p + 1))}
-                                        disabled={projectPage === projectPagination.totalPages}
-                                        className="btn-secondary text-xs disabled:opacity-50">Next</button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </>
-            )}
+
+                {/* Submit */}
+                <div className="flex gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onClick={() => navigate('/research')} className="btn-secondary flex-1">
+                        Cancel
+                    </button>
+                    <button type="submit" disabled={loading} className="btn-primary flex-1 py-3">
+                        {loading ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <Spinner size="sm" /> Submitting...
+                            </span>
+                        ) : 'Submit Research'}
+                    </button>
+                </div>
+            </form>
         </div>
     );
 }
