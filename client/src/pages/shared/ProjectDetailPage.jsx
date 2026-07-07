@@ -351,9 +351,174 @@ export default function ProjectDetailPage() {
                                     )}
                                 </div>
                             </section>
+
+                            {/* Attachments Section with Split Tables */}
+                            <section className="space-y-8">
+                                <FileTable
+                                    title="Project Documents"
+                                    files={documentFiles}
+                                    icon={<DocumentTextIcon className="w-6 h-6 text-blue-600" />}
+                                    typeColor="bg-blue-100 text-blue-800"
+                                    canManage={canManage}
+                                    emptyMessage="No project documents uploaded yet."
+                                />
+
+                                <FileTable
+                                    title="Video Presentations"
+                                    files={videoFiles}
+                                    icon={<svg className="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>}
+                                    typeColor="bg-amber-100 text-amber-800"
+                                    canManage={canManage}
+                                />
+
+                                <FileTable
+                                    title="Audio Recordings"
+                                    files={audioFiles}
+                                    icon={<svg className="w-6 h-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>}
+                                    typeColor="bg-purple-100 text-purple-800"
+                                    canManage={canManage}
+                                />
+
+                                <FileTable
+                                    title="Other Supplementary Files"
+                                    files={otherFiles}
+                                    icon={<svg className="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+                                    typeColor="bg-slate-100 text-slate-800"
+                                    canManage={canManage}
+                                />
+                            </section>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    );
+}
+function FileTable({ title, files, icon, typeColor, canManage, emptyMessage }) {
+    if (files.length === 0) {
+        if (!emptyMessage) return null;
+        return (
+            <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                    {icon}
+                    <h3 className="text-lg font-bold text-slate-800">{title}</h3>
+                </div>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center text-slate-400 italic text-sm">
+                    {emptyMessage}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+                {icon}
+                <h3 className="text-lg font-bold text-slate-800">{title}</h3>
+                <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">
+                    {files.length} {files.length === 1 ? 'file' : 'files'}
+                </span>
+            </div>
+            <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
+                <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
+                    <thead className="bg-slate-50">
+                        <tr>
+                            <th scope="col" className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">File Name</th>
+                            <th scope="col" className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Category</th>
+                            <th scope="col" className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Size</th>
+                            <th scope="col" className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 bg-white">
+                        {files.map((file, idx) => {
+                            const isPdf = file.fileType === 'application/pdf';
+                            const isImage = file.fileType?.startsWith('image/');
+                            const isAudio = file.fileType?.startsWith('audio/');
+                            const isVideo = file.fileType?.startsWith('video/');
+
+                            return (
+                                <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                                    <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-800">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
+                                                {isPdf && (
+                                                    <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                    </svg>
+                                                )}
+                                                {isImage && (
+                                                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a1 1 0 011.414 0L16 17m0 0l1-1m-1 1k-3-3m-3.5 8h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                )}
+                                                {isAudio && (
+                                                    <svg className="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                                                    </svg>
+                                                )}
+                                                {isVideo && (
+                                                    <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                    </svg>
+                                                )}
+                                                {!isPdf && !isImage && !isAudio && !isVideo && (
+                                                    <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <span className="truncate max-w-xs font-bold text-slate-700" title={file.displayName}>{file.displayName}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold tracking-wide uppercase ${
+                                            file.categoryLabel === 'Proposal' ? 'bg-emerald-100 text-emerald-800' :
+                                            file.categoryLabel === 'End Report' ? 'bg-blue-100 text-blue-800' :
+                                            file.categoryLabel === 'Audio' ? 'bg-purple-100 text-purple-800' :
+                                            file.categoryLabel === 'Video' ? 'bg-amber-100 text-amber-800' :
+                                            file.categoryLabel === 'Image' ? 'bg-indigo-100 text-indigo-800' :
+                                            'bg-slate-100 text-slate-800'
+                                        }`}>
+                                            {file.categoryLabel}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-slate-500 text-xs font-semibold">
+                                        {file.fileSize ? (file.fileSize / (1024 * 1024)).toFixed(2) + ' MB' : '0.00 MB'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-medium">
+                                        <div className="flex items-center justify-end gap-2">
+                                            {(isPdf || isImage || isAudio || isVideo) && (
+                                                <button
+                                                    onClick={file.onPreview}
+                                                    className="p-2 text-slate-400 hover:text-primary-600 hover:bg-slate-100 rounded-lg transition-all"
+                                                    title="Preview File"
+                                                >
+                                                    <EyeIcon className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={file.onDownload}
+                                                className="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                                title="Download File"
+                                            >
+                                                <ArrowDownTrayIcon className="w-5 h-5" />
+                                            </button>
+                                            {canManage && file.onDelete && (
+                                                <button
+                                                    onClick={file.onDelete}
+                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                    title="Delete File"
+                                                >
+                                                    <TrashIcon className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
             </div>
         </div>
     );
