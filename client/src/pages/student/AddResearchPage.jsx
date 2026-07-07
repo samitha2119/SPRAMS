@@ -146,6 +146,18 @@ export default function AddResearchPage() {
                         ))}
                     </div>
                 )}
+
+                {/* Description */}
+                <div>
+                    <label className="label">Description *</label>
+                    <textarea
+                        rows={6}
+                        className={`input-field resize-none ${errors.description ? 'border-red-400' : ''}`}
+                        placeholder="Provide a detailed description of your research..."
+                        {...register('description', { required: 'Description required', minLength: { value: 20, message: 'Min 20 chars' } })}
+                    />
+                    {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description.message}</p>}
+                </div>
             </form>
         </div>
     );
