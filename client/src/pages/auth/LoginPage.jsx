@@ -113,24 +113,6 @@ export default function LoginPage() {
                         </button>
                     </form>
 
-                    {/* Demo credentials */}
-                    <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Demo Accounts</p>
-                        <div className="space-y-2">
-                            {[
-                                { role: 'Admin', email: 'admin@archive.edu', pass: 'admin123456', color: 'red' },
-                                { role: 'Lecturer', email: 'lecturer@archive.edu', pass: 'lecturer123', color: 'blue' },
-                                { role: 'Student', email: 'student@archive.edu', pass: 'student123', color: 'green' },
-                            ].map(({ role, email, pass, color }) => (
-                                <div key={role} className="flex items-center justify-between text-xs">
-                                    <span className={`badge badge-${color}`}>{role}</span>
-                                    <span className="text-slate-500">{email}</span>
-                                    <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">{pass}</code>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
                     <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col items-center gap-2">
                         <p className="text-sm text-slate-500">Don't have an account yet?</p>
                         <Link

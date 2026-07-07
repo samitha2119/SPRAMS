@@ -24,5 +24,8 @@ db_data/
 # OS/IDE files
 .DS_Store
 .vscode/
-.idea/
 .agent/
+
+# Vite local cache
+client/.vite/
+
