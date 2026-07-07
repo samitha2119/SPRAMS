@@ -105,6 +105,47 @@ export default function AddResearchPage() {
                     />
                     {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
                 </div>
+
+                {/* Year and Tags */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label className="label">Year *</label>
+                        <select className="input-field" {...register('year', { required: true })}>
+                            {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="label">Tags</label>
+                        <div className="flex gap-2">
+                            <input
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
+                                className="input-field flex-1"
+                                placeholder="Add tag, press Enter"
+                            />
+                            <button type="button" onClick={addTag} className="btn-secondary px-3 text-sm">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tags display */}
+                {tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                        {tags.map((tag) => (
+                            <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-50 text-primary-700 rounded-full text-xs border border-primary-100">
+                                <TagIcon className="w-3 h-3" />
+                                {tag}
+                                <button
+                                    type="button"
+                                    onClick={() => setTags(tags.filter((t) => t !== tag))}
+                                    className="text-primary-400 hover:text-primary-700 ml-1"
+                                    aria-label={`Remove tag ${tag}`}
+                                >×</button>
+                            </span>
+                        ))}
+                    </div>
+                )}
             </form>
         </div>
     );
